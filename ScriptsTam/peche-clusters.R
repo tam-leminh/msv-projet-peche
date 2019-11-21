@@ -12,8 +12,6 @@ library(rpart.plot)
 lanfish <- lanquant.co[c(8:157)]
 disfish <- disquant.co[c(8:157)]
 
-data <- lanquant.co
-
 #CLUSTERING
 
 #Clustering with logsums of landed and discarded fish
@@ -59,6 +57,8 @@ summary(km_model)
 data <- lanquant.co
 
 data = subset(data, select=-c(1,2,3,5,6,7))
+
+metrics <- data.frame(algo=character(), train_mse=double(), test_mse=double(), stringsAsFactors=FALSE)
 
 #Add cluster masses to data frame
 
@@ -121,6 +121,7 @@ test <- scaled_data[-train_ind, ]
 baseline = mean(train$data.disquant_sum)
 baseline_train_MSE = sqrt(mean((train$data.disquant_sum - baseline)^2))
 baseline_test_MSE = sqrt(mean((test$data.disquant_sum - baseline)^2))
+metrics[nrow(metrics) + 1,] = list("baseline_mean", baseline_train_MSE, baseline_test_MSE)
 
 #Linear model without cross terms
 
@@ -128,6 +129,14 @@ mod_1 <- lm(data.disquant_sum ~ ., data=train)
 summary(mod_1)
 lm_1_train_pred = rmse(mod_1, train)
 lm_1_test_pred = rmse(mod_1, test)
+metrics[nrow(metrics) + 1,] = list("lm_all", lm_1_train_pred, lm_1_test_pred)
+
+mod_aic = step(mod_1)
+summary(mod_aic)
+lm_aic_train_pred = rmse(mod_aic, train)
+lm_aic_test_pred = rmse(mod_aic, test)
+metrics[nrow(metrics) + 1,] = list("lm_aic", lm_aic_train_pred, lm_aic_test_pred)
+
 
 colnames(train[1:k])[1]
 form <- "data.disquant_sum ~ "
@@ -139,6 +148,7 @@ mod_2 <- lm(form, data=train)
 summary(mod_2)
 lm_2_train_pred = rmse(mod_2, train)
 lm_2_test_pred = rmse(mod_2, test)
+metrics[nrow(metrics) + 1,] = list("lm_simple", lm_2_train_pred, lm_2_test_pred)
 
 #Lasso
 
@@ -155,6 +165,7 @@ lasso_test_pred = predict(cvfit, newx = data.matrix(test[c(2:dim(train)[2]-1)]),
 lasso_train_MSE = sqrt(mean((train[[c(dim(train)[2])]] - lasso_train_pred)^2))
 lasso_test_MSE = sqrt(mean((test[[c(dim(train)[2])]] - lasso_test_pred)^2))
 coef(cvfit, s=cvfit$lambda.min)
+metrics[nrow(metrics) + 1,] = list("lasso", lasso_train_MSE, lasso_test_MSE)
 
 #Decision tree
 
@@ -164,4 +175,5 @@ printcp(tree_mod)
 tree_train_pred = rmse(tree_mod, train)
 tree_test_pred = rmse(tree_mod, test)
 prp(tree_mod)
+metrics[nrow(metrics) + 1,] = list("tree", tree_train_pred, tree_test_pred)
 
