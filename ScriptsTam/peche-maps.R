@@ -4,9 +4,12 @@ library(ggplot2)
 library(maps)
 library(tmap)
 library(ggmap)
+library(mclust)
 
 lanfish <- lanquant.co[c(8:157)]
 disfish <- disquant.co[c(8:157)]
+
+lan_coord <- lanquant.co[c("lonIni", "latIni")]
 
 world_map <- map_data("world")
 p <- ggplot() + coord_fixed() +
@@ -37,3 +40,27 @@ map_data <-
 
 map_data
 
+max_clusters = 20
+
+ratio_ss <- data.frame(cluster = seq(from = 1, to = max_clusters, by = 1)) 
+
+for (k in 1:max_clusters) {
+  
+  km_model <- kmeans(subset(lan_coord, select=c("lonIni", "latIni")), k, nstart=20)
+  ratio_ss$ratio[k] <- km_model$tot.withinss / km_model$totss
+}
+
+ggplot(ratio_ss, aes(cluster, ratio)) + 
+  geom_line() +
+  geom_point()
+
+nb_clusters = 3
+
+km_model <- kmeans(subset(lan_coord, select=c("lonIni", "latIni")), centers = nb_clusters)
+lan_coord$cluster <- km_model$cluster
+
+p <- ggplot(lan_coord, aes(x=lonIni, y=latIni, col=factor(cluster))) + geom_point()
+p
+
+gmm <- Mclust(subset(lan_coord, select=c("lonIni", "latIni")))
+plot(gmm)
