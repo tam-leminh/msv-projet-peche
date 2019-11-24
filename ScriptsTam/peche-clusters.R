@@ -26,7 +26,7 @@ loglandis <- data.frame(logdisfish, loglanfish)
 
 plot(loglandis)
 
-#CV for number of clusters
+#CV for number of logclusters
 
 max_clusters = 20
 
@@ -42,15 +42,43 @@ ggplot(ratio_ss, aes(cluster, ratio)) +
   geom_line() +
   geom_point()
 
-#Build clusters
+#Build logclusters
 
-nb_clusters = 6
+nb_logclusters = 6
 
-km_model <- kmeans(loglandis, centers = nb_clusters, nstart=20)
+km_model <- kmeans(loglandis, centers = nb_logclusters, nstart=20)
 loglandis$cluster <- km_model$cluster
 ggplot(loglandis, aes(logdisfish, loglanfish, col = factor(cluster))) + geom_point(size = 2)
 
 summary(km_model)
+
+#Geographical clusters
+
+geolandis <- lanquant.co[c("lonIni", "latIni")]
+
+#CV for number of geoclusters
+
+max_clusters = 20
+
+ratio_ss <- data.frame(cluster = seq(from = 1, to = max_clusters, by = 1)) 
+
+for (k in 1:max_clusters) {
+  
+  km_model <- kmeans(subset(geolandis, select=c("lonIni", "latIni")), k, nstart=20)
+  ratio_ss$ratio[k] <- km_model$tot.withinss / km_model$totss
+}
+
+ggplot(ratio_ss, aes(cluster, ratio)) + 
+  geom_line() +
+  geom_point()
+
+#Build geoclusters
+
+nb_geoclusters = 6
+
+km_model <- kmeans(subset(geolandis, select=c("lonIni", "latIni")), centers = nb_geoclusters)
+geolandis$cluster <- km_model$cluster
+ggplot(geolandis, aes(x=lonIni, y=latIni, col=factor(cluster))) + geom_point()
 
 #Build data frame
 
@@ -60,11 +88,12 @@ data = subset(data, select=-c(1,2,3,5,6,7))
 
 metrics <- data.frame(algo=character(), train_mse=double(), test_mse=double(), stringsAsFactors=FALSE)
 
-#Add cluster masses to data frame
+#Add cluster to data frame
 
-for (k in 1:nb_clusters) {
+for (k in 1:nb_logclusters) {
   data[paste0("mass_cluster_", k)] <- rowSums(data[, rownames(loglandis[ loglandis$cluster == k ,])])
 }
+data["geocluster"] <- as.factor(geolandis$cluster)
 
 #Add sums of landed and discarded fish
 
@@ -77,37 +106,41 @@ data = subset(data, select=-c(2:151))
 
 #Remove clusters of fish which are never landed
 
-nonlan = which(colSums(data[c(2:dim(data)[2])])==0) + 1
+nonlan = which(colSums(data[ sapply(data, is.numeric) ])==0) + 1
 nonlan
 data = subset(data, select=-c(nonlan))
 
 #Add cross, squared and log features
+data_num = data[sapply(data, is.numeric)]
+k = dim(data_num)[2]-1
+colnames(data_num)[k]
 
-k = dim(data)[2]-1
-colnames(data)[k]
-
-for (i in 2:(k-1)) {
+for (i in 1:(k-1)) {
   for (j in (i+1):k) {
-    data[paste0(colnames(data)[i], "*", colnames(data)[j])] <- data[i]*data[j]
+    data[paste0(colnames(data_num)[i], "*", colnames(data_num)[j])] <- data_num[i]*data_num[j]
   }
 }
 
 for (i in 2:k) {
-  data[paste0(colnames(data)[i], "_sq")] <- data[i]^2
+  data[paste0(colnames(data_num)[i], "_sq")] <- data_num[i]^2
 }
 
 for (i in 2:k) {
-  new_col = log(data[i])
+  new_col = log(data_num[i])
   new_col[sapply(new_col, is.infinite)] <- 0
-  data[paste0(colnames(data)[i], "_log")] <- new_col
+  data[paste0(colnames(data_num)[i], "_log")] <- new_col
 }
 
-data <- subset(data, select=c(1:k, (k+2):(dim(data)[2]), (k+1)))
+data_num <- data[sapply(data, is.numeric)]
+
+corrmat <- cor(data_num)
+col<- colorRampPalette(c("blue", "white", "red"))(256)
+heatmap(x = corrmat, col = col, symm = TRUE)
 
 #Scale features
 
-scaled_data <- data.frame(data$month, lapply(data[c(2:(dim(data)[2]-1))], function(x) c(scale(x))), data$disquant_sum)
-scaled_data$data.disquant_sum <- data$disquant_sum-mean(data$disquant_sum)
+scaled_data <- data.frame(data$month, data$geocluster, 
+                          lapply(data_num[ , !names(data_num)=="disquant_sum" ], function(x) c(scale(x))), data$disquant_sum)
 
 #Build train and test sets
 
@@ -136,7 +169,6 @@ summary(mod_aic)
 lm_aic_train_pred = rmse(mod_aic, train)
 lm_aic_test_pred = rmse(mod_aic, test)
 metrics[nrow(metrics) + 1,] = list("lm_aic", lm_aic_train_pred, lm_aic_test_pred)
-
 
 colnames(train[1:k])[1]
 form <- "data.disquant_sum ~ "
