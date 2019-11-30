@@ -1,0 +1,9 @@
+graphical lasso
+Meinshausen, Nicolai; Bühlmann, Peter. High-dimensional graphs and variable selection with the Lasso. Ann. Statist. 34 (2006), no. 3, 1436--1462. doi:10.1214/009053606000000281.
+Friedman, J., Hastie, T., & Tibshirani, R. (2008). Sparse inverse covariance estimation with the graphical lasso. Biostatistics, 9(3), 432-441. Chicago
+
+ebic
+Foygel, R., & Drton, M. (2010, November). Extended Bayesian Information Criteria for Gaussian Graphical Models. In NIPS (pp. 604-612). Chicago
+
+huge
+Liu H, Lafferty J, Wasserman L. The nonparanormal semiparametric estimation of high dimensional undirected graphs. Journal of Machine Learning Research. 2009;10:2295–2328.
