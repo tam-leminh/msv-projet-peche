@@ -16,6 +16,8 @@ library(huge)
 
 lan <- lanquant.co[c(8:157)]
 dis <- disquant.co[c(8:157)]
+colnames(lan) <- paste0("X",c(1:150))
+colnames(dis) <- paste0("Y",c(1:150))
 fishnodes <- data.frame(lan, dis)
 nonlan = which(colSums(fishnodes)!=0)
 nonlan
@@ -23,6 +25,8 @@ fishnodes <- subset(fishnodes, select=c(nonlan))
 S <- cov(fishnodes, fishnodes)
 names <- rownames(S)
 s <- posdefify(S)
+colnames(s) <- names
+rownames(s) <- names
 a <- glasso(s, rho=0.1, nobs=362, trace=TRUE)
 qgraph(a, labels=names, layout="spring")
 
@@ -49,3 +53,5 @@ summary(h_out_n)
 summary(h_out)
 plot(h_out_n)
 plot(h_out)
+
+hist(s.npn[,1])
