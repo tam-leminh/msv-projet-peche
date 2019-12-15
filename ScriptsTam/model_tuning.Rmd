@@ -1,5 +1,5 @@
 ---
-title: "Régression"
+title: "Réglage modèles"
 author: "tlm"
 date: "14/12/2019"
 output: html_document
@@ -50,46 +50,20 @@ train_ind = sample(seq_len(nrow(data)), size = floor(proportion * nrow(data)))
 train = data[train_ind, ]
 test = data[-train_ind, ]
 ```
-## Prédiction
-
-### Initialisation
-
-```{r}
-scores = data.frame(matrix(ncol = 4, nrow = 0))
-colnames(scores) = c("train", "test")
-base_train_mse = 0
-base_test_mse = 0
-rf_train_mse = 0
-rf_test_mse = 0
-lm_train_mse = 0
-lm_test_mse = 0
-```
-
-### Prédictions
-Pour chaque $Y_i$, on fait une prédiction par modèle et on somme les MSE selon les $Y_i$.
+## Réglage random forests
 ```{r warning=FALSE}
+nlist = 5^(1:3)
+mlist = seq(10, length(xnames), 20)
+grid = expand.grid(ntree=nlist,mtry=mlist)
+print(grid)
+res = data.frame(matrix(ncol = length(ynames), nrow = dim(grid)[1]))
+colnames(res) = ynames
 for (yname in ynames) {
-  baseline = mean(train[[yname]])
-  base_train_mse = base_train_mse + mean((train[[yname]] - baseline)^2)
-  base_test_mse = base_train_mse + mean((test[[yname]] - baseline)^2)
-  
   fmla = as.formula(paste0(yname, "~", strsumx))
-  
-  rf_mod <- randomForest(fmla, data=train, ntree=100, mtry=40)
-  rf_train_mse = rf_train_mse + mse(rf_mod, train)
-  rf_test_mse = rf_test_mse + mse(rf_mod, test)
-  
-  lm_mod <- lm(fmla, data=train)
-  lm_train_mse = lm_train_mse + mse(lm_mod, train)
-  lm_test_mse = lm_train_mse + mse(lm_mod, test)
+  for (k in c(1:dim(grid)[1])) {
+    rf_mod <- randomForest(fmla, data=train, ntree=grid$ntree[k], mtry=grid$mtry[k])
+    res[k, yname] = rmse(rf_mod, test)
+  }
 }
-```
-
-## Analyse
-On compare les RMSE.
-```{r}
-scores['base',] = as.vector(c(sqrt(base_train_mse), sqrt(base_test_mse)))
-scores['rf',] = as.vector(c(sqrt(rf_train_mse), sqrt(rf_test_mse)))
-scores['lm',] = as.vector(c(sqrt(lm_train_mse), sqrt(lm_test_mse)))
-scores
+res
 ```
