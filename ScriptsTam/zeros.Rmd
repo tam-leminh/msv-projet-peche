@@ -1,0 +1,92 @@
+---
+title: "Détection de zéros"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Chargement des données
+
+```{r message=FALSE, results='hide'}
+source("miseenformedonnees.R")
+```
+
+## Traitement des données
+
+On numérote les espèces pour $k = 1, .., 150$.
+
+Pour l'espèce $k$ :
+
+- $X_k \in \{0,1\}$ débarquée ou pas,
+- $Y_k \in \{0,1\}$ rejetée ou pas.
+```{r}
+lanfish = lanquant.co[c(8:157)]
+disfish = disquant.co[c(8:157)]
+colnames(lanfish) = paste0("X",c(1:150))
+colnames(disfish) = paste0("Y",c(1:150))
+lanfish[lanfish > 0] = 1
+disfish[disfish > 0] = 1
+```
+On enlève les $X_k$ des espèces qui ne sont jamais débarquées et les $Y_k$ des espèces qui ne sont jamais rejetées.
+```{r}
+lanzeros = which(colSums(lanfish)==0)
+diszeros = which(colSums(disfish)==0)
+lanfish = subset(lanfish, select=-c(lanzeros))
+disfish = subset(disfish, select=-c(diszeros))
+print(paste("Nombre d'espèces jamais débarquées :", length(lanzeros)))
+print(paste("Nombre d'espèces jamais rejetées :", length(diszeros)))
+```
+Chaque observation $i$ donne la connaissance des variables :
+
+- $X_k  \text{  pour } k = 1, .., 150$,
+- month,
+- rect,
+- $Y_k  \text{  pour } k = 1, .., 150$.
+```{r}
+lanfish$month = lanquant.co$month
+lanfish$rect = lanquant.co$rect
+data = data.frame(lanfish,disfish)
+nobs = dim(data)[1]
+print(paste("Nombre d'observations:", nobs))
+```
+On prédit les zéros de chaque $Y_k$ (variables à prédire) avec les $X_k$, month et rect (variables prédictives).
+```{r}
+xnames = colnames(lanfish)
+ynames = colnames(disfish)
+strsumx = paste(xnames, collapse= "+")
+```
+## Régression logistique
+
+On va s'intéresser aux métriques habituelles de classification binaire, les taux de vrais positifs et de vrais négatifs.
+```{r}
+rates = data.frame(matrix(ncol = 4, nrow = 0))
+colnames(rates) = c("tn", "fn", "fp", "tp")
+```
+On réalise une régression logistique pour chaque $Y_k$, puis on tranche avec un seuil de $0.5$.
+```{r warning=FALSE}
+for (yname in ynames) {
+  fmla = as.formula(paste0(yname, "~", strsumx))
+  model = glm(fmla, family=binomial(link='logit'), data=data)
+  pred = predict(model, data,type = "response")
+  pred = ifelse(pred > 0.5,1,0)
+  rates[yname,] = as.vector(table(data[[yname]], pred))
+}
+```
+## Analyse des résultats
+
+On regarde les totaux de vrais/faux positifs/négatifs, en ajoutant les prédictions pour les espèces jamais rejetées.
+```{r}
+totals = colSums(rates)
+totals['tn'] = totals['tn']+length(diszeros)*nobs
+totals
+print(paste("Sensitivité:", totals['tp']/(totals['tp']+totals['fn'])))
+print(paste("Spécificité:", totals['tn']/(totals['tn']+totals['fp'])))
+```
+On calcule la sensitivité et la spécificité pour chaque espèce.
+```{r}
+rates$sens = rates$tp/(rates$tp + rates$fn)
+rates$spec = rates$tn/(rates$tn + rates$fp)
+rates
+```

@@ -1,0 +1,93 @@
+---
+title: "Régression"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(dplyr)
+library(tidyverse)
+library(ggplot2)
+library(modelr)
+library(randomForest)
+```
+
+## Chargement des données
+```{r message=FALSE, results='hide'}
+source("miseenformedonnees.R")
+```
+## Traitement des données
+
+```{r}
+lanfish = lanquant.co[c(8:157)]
+disfish = disquant.co[c(8:157)]
+colnames(lanfish) = paste0("X",c(1:150))
+colnames(disfish) = paste0("Y",c(1:150))
+lanzeros = which(colSums(lanfish)!=0)
+diszeros = which(colSums(disfish)!=0)
+lanfish = subset(lanfish, select=c(lanzeros))
+disfish = subset(disfish, select=c(diszeros))
+
+lanfish$month = lanquant.co$month
+lanfish$rect = lanquant.co$rect
+
+xnames = colnames(lanfish)
+ynames = colnames(disfish)
+strsumx = paste(xnames, collapse= "+")
+
+data = data.frame(lanfish,disfish)
+```
+
+## Données d'entraînement et de test
+
+```{r}
+#Build train and test sets
+set.seed(55)
+proportion = 0.7
+train_ind = sample(seq_len(nrow(data)), size = floor(proportion * nrow(data)))
+train = data[train_ind, ]
+test = data[-train_ind, ]
+```
+## Prédiction
+
+### Initialisation
+
+```{r}
+scores = data.frame(matrix(ncol = 4, nrow = 0))
+colnames(scores) = c("train", "test")
+base_train_mse = 0
+base_test_mse = 0
+rf_train_mse = 0
+rf_test_mse = 0
+lm_train_mse = 0
+lm_test_mse = 0
+```
+
+### Prédictions
+Pour chaque $Y_i$, on fait une prédiction par modèle et on somme les MSE selon les $Y_i$.
+```{r warning=FALSE}
+for (yname in ynames) {
+  baseline = mean(train[[yname]])
+  base_train_mse = base_train_mse + mean((train[[yname]] - baseline)^2)
+  base_test_mse = base_train_mse + mean((test[[yname]] - baseline)^2)
+  
+  fmla = as.formula(paste0(yname, "~", strsumx))
+  
+  rf_mod <- randomForest(fmla, data=train, ntree=100, mtry=40)
+  rf_train_mse = rf_train_mse + mse(rf_mod, train)
+  rf_test_mse = rf_test_mse + mse(rf_mod, test)
+  
+  lm_mod <- lm(fmla, data=train)
+  lm_train_mse = lm_train_mse + mse(lm_mod, train)
+  lm_test_mse = lm_train_mse + mse(lm_mod, test)
+}
+```
+
+## Analyse
+On compare les RMSE.
+```{r}
+scores['base',] = as.vector(c(sqrt(base_train_mse), sqrt(base_test_mse)))
+scores['rf',] = as.vector(c(sqrt(rf_train_mse), sqrt(rf_test_mse)))
+scores['lm',] = as.vector(c(sqrt(lm_train_mse), sqrt(lm_test_mse)))
+scores
+```

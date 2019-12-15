@@ -6,6 +6,7 @@ library(caTools)
 library(glmnet)
 library(rpart)
 library(rpart.plot)
+library(randomForest)
 
 #Keep only fish data
 
@@ -209,3 +210,7 @@ tree_test_pred = rmse(tree_mod, test)
 prp(tree_mod)
 metrics[nrow(metrics) + 1,] = list("tree", tree_train_pred, tree_test_pred)
 
+rf_mod <- randomForest(data.disquant_sum ~ ., data=train, ntree=10000)
+rf_train_pred = rmse(rf_mod, train)
+rf_test_pred = rmse(rf_mod, test)
+metrics[nrow(metrics) + 1,] = list("rf", rf_train_pred, rf_test_pred)
