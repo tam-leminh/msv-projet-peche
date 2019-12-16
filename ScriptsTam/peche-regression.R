@@ -45,7 +45,7 @@ for (k in c(1:length(mlist))) {
   mres[k] = rmse(rf_mod, test)
 }
 
-scores = data.frame(matrix(ncol = 4, nrow = 0))
+scores = data.frame(matrix(ncol = 2, nrow = 0))
 colnames(scores) = c("train", "test")
 base_train_mse = 0
 base_test_mse = 0
