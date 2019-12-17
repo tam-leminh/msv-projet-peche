@@ -370,7 +370,6 @@ summary {
 </div>
 
 
-<p>dfsd</p>
 <div id="chargement-des-données" class="section level2">
 <h2>Chargement des données</h2>
 <pre class="r"><code>source(&quot;miseenformedonnees.R&quot;)</code></pre>
@@ -405,7 +404,8 @@ print(paste(&quot;Nombre d&#39;espèces jamais débarquées :&quot;, length(lanz
 <li>rect,</li>
 <li><span class="math inline">\(Y_k \text{  pour } k = 1, .., 150\)</span>.</li>
 </ul>
-<pre class="r"><code>lanfish$month = lanquant.co$month
+<pre class="r"><code>xnames_no_month = colnames(lanfish)
+lanfish$month = lanquant.co$month
 lanfish$rect = lanquant.co$rect
 data = data.frame(lanfish,disfish)
 nobs = dim(data)[1]
@@ -414,15 +414,24 @@ print(paste(&quot;Nombre d&#39;observations:&quot;, nobs))</code></pre>
 <p>On prédit les zéros de chaque <span class="math inline">\(Y_k\)</span> (variables à prédire) avec les <span class="math inline">\(X_k\)</span>, month et rect (variables prédictives).</p>
 <pre class="r"><code>xnames = colnames(lanfish)
 ynames = colnames(disfish)
+strsumx_no_month = paste(xnames_no_month, collapse= &quot;+&quot;)
 strsumx = paste(xnames, collapse= &quot;+&quot;)</code></pre>
 </div>
 <div id="régression-logistique" class="section level2">
 <h2>Régression logistique</h2>
 <p>On va s’intéresser aux métriques habituelles de classification binaire, les taux de vrais positifs et de vrais négatifs.</p>
 <pre class="r"><code>rates = data.frame(matrix(ncol = 4, nrow = 0))
-colnames(rates) = c(&quot;tn&quot;, &quot;fn&quot;, &quot;fp&quot;, &quot;tp&quot;)</code></pre>
+colnames(rates) = c(&quot;tn&quot;, &quot;fn&quot;, &quot;fp&quot;, &quot;tp&quot;)
+rates_no_month = data.frame(matrix(ncol = 4, nrow = 0))
+colnames(rates_no_month) = c(&quot;tn&quot;, &quot;fn&quot;, &quot;fp&quot;, &quot;tp&quot;)</code></pre>
 <p>On réalise une régression logistique pour chaque <span class="math inline">\(Y_k\)</span>, puis on tranche avec un seuil de <span class="math inline">\(0.5\)</span>.</p>
 <pre class="r"><code>for (yname in ynames) {
+  fmla_no_month = as.formula(paste0(yname, &quot;~&quot;, strsumx_no_month))
+  model = glm(fmla_no_month, family=binomial(link=&#39;logit&#39;), data=data)
+  pred = predict(model, data,type = &quot;response&quot;)
+  pred = ifelse(pred &gt; 0.5,1,0)
+  rates_no_month[yname,] = as.vector(table(data[[yname]], pred))
+  
   fmla = as.formula(paste0(yname, &quot;~&quot;, strsumx))
   model = glm(fmla, family=binomial(link=&#39;logit&#39;), data=data)
   pred = predict(model, data,type = &quot;response&quot;)
@@ -433,6 +442,23 @@ colnames(rates) = c(&quot;tn&quot;, &quot;fn&quot;, &quot;fp&quot;, &quot;tp&quo
 <div id="analyse-des-résultats" class="section level2">
 <h2>Analyse des résultats</h2>
 <p>On regarde les totaux de vrais/faux positifs/négatifs, en ajoutant les prédictions pour les espèces jamais rejetées.</p>
+<div id="sans-moisrectangle" class="section level3">
+<h3>Sans mois/rectangle</h3>
+<pre class="r"><code>totals_no_month = colSums(rates_no_month)
+totals_no_month[&#39;tn&#39;] = totals_no_month[&#39;tn&#39;]+length(diszeros)*nobs
+totals_no_month</code></pre>
+<pre><code>##    tn    fn    fp    tp 
+## 48154  1187   767  4192</code></pre>
+<pre class="r"><code>print(paste(&quot;Sensitivité:&quot;, totals_no_month[&#39;tp&#39;]/(totals_no_month[&#39;tp&#39;]+totals_no_month[&#39;fn&#39;])))</code></pre>
+<pre><code>## [1] &quot;Sensitivité: 0.779327012455847&quot;</code></pre>
+<pre class="r"><code>print(paste(&quot;Spécificité:&quot;, totals_no_month[&#39;tn&#39;]/(totals_no_month[&#39;tn&#39;]+totals_no_month[&#39;fp&#39;])))</code></pre>
+<pre><code>## [1] &quot;Spécificité: 0.984321661454181&quot;</code></pre>
+<p>On calcule la sensitivité et la spécificité pour chaque espèce.</p>
+<pre class="r"><code>rates_no_month$sens = rates_no_month$tp/(rates_no_month$tp + rates_no_month$fn)
+rates_no_month$spec = rates_no_month$tn/(rates_no_month$tn + rates_no_month$fp)</code></pre>
+</div>
+<div id="avec-moisrectangle" class="section level3">
+<h3>Avec mois/rectangle</h3>
 <pre class="r"><code>totals = colSums(rates)
 totals[&#39;tn&#39;] = totals[&#39;tn&#39;]+length(diszeros)*nobs
 totals</code></pre>
@@ -567,6 +593,7 @@ rates</code></pre>
 ## Y148 341  0  0  21 1.0000000 1.0000000
 ## Y149 361  0  0   1 1.0000000 1.0000000
 ## Y150 280 35 12  35 0.5000000 0.9589041</code></pre>
+</div>
 </div>
 
 
