@@ -14,6 +14,7 @@ library(randomForest)
 ```
 
 ## Chargement des données
+
 ```{r message=FALSE, results='hide'}
 source("miseenformedonnees.R")
 ```
@@ -23,7 +24,9 @@ source("miseenformedonnees.R")
 On applique le système de détection de zéros et on construit une matrice layer "calque" de 0 et de 1.
 
 ### Préparation des données
+
 On a enlevé les variables month et rect car ça pose des problèmes dans le partage train/test
+
 ```{r}
 lanfish = lanquant.co[c(8:157)]
 disfish = disquant.co[c(8:157)]
@@ -50,6 +53,7 @@ colnames(layer) = ynames
 ```
 
 ### Données d'entraînement/test
+
 ```{r}
 set.seed(56)
 
@@ -63,6 +67,7 @@ n_test = dim(test)[1]
 ```
 
 ### Régression logistique
+
 ```{r warning=FALSE}
 rates_train = data.frame(matrix(ncol = 4, nrow = 0))
 rates_test = data.frame(matrix(ncol = 4, nrow = 0))
@@ -89,6 +94,7 @@ for (yname in ynames) {
 ```
 
 ### Analyse
+
 ```{r}
 totals_train = colSums(rates_train)
 totals_train
@@ -99,16 +105,18 @@ totals_test
 ## Régression
 
 ### Préparation des données
+
 On reconstruit les données avec les quantités de poisson.
+
 ```{r}
-lanfish <- lanquant.co[c(8:157)]
-disfish <- disquant.co[c(8:157)]
-colnames(lanfish) <- paste0("X",c(1:150))
-colnames(disfish) <- paste0("Y",c(1:150))
+lanfish = lanquant.co[c(8:157)]
+disfish = disquant.co[c(8:157)]
+colnames(lanfish) = paste0("X",c(1:150))
+colnames(disfish) = paste0("Y",c(1:150))
 lanzeros = which(colSums(lanfish)!=0)
 diszeros = which(colSums(disfish)!=0)
-lanfish <- subset(lanfish, select=c(lanzeros))
-disfish <- subset(disfish, select=c(diszeros))
+lanfish = subset(lanfish, select=c(lanzeros))
+disfish = subset(disfish, select=c(diszeros))
 
 #lanfish$month = lanquant.co$month
 #lanfish$rect = lanquant.co$rect
@@ -121,6 +129,7 @@ test = data[-train_ind, ]
 ```
 
 ### Initialisation des scores
+
 Soit un ensemble de modèles $\mathcal{M}$. Les scores vont servir à comparer les différents modèles et procédures. Pour un certain modèle $m \in \mathcal{M}$, on définit son score $S_m$ comme ci-dessous :
 
 - le modèle $m$ genère des prédictions $\hat{Y}^m$,
@@ -147,6 +156,7 @@ lmnz_test_mse = 0
 ```
 
 ### Régression
+
 Modèles : 
 
 - base : on prédit la moyenne pour chaque espèce,
@@ -235,6 +245,7 @@ for (yname in ynames) {
 ```
 
 ## Analyse
+
 ```{r}
 scores['base',] = as.vector(c(sqrt(base_train_mse), sqrt(base_test_mse)))
 scores['rf',] = as.vector(c(sqrt(rf_train_mse), sqrt(rf_test_mse)))
