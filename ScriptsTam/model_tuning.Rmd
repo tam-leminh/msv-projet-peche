@@ -15,9 +15,11 @@ library(randomForest)
 ```
 
 ## Chargement des données
+
 ```{r message=FALSE, results='hide'}
 source("miseenformedonnees.R")
 ```
+
 ## Traitement des données
 
 ```{r}
@@ -50,7 +52,9 @@ train_ind = sample(seq_len(nrow(data)), size = floor(proportion * nrow(data)))
 train = data[train_ind, ]
 test = data[-train_ind, ]
 ```
+
 ## Réglage random forests
+
 ```{r warning=FALSE}
 nlist = 5^(1:3)
 mlist = seq(10, length(xnames), 20)
