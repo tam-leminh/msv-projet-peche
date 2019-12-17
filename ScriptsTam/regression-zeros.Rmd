@@ -51,9 +51,9 @@ colnames(layer) = ynames
 
 ### Données d'entraînement/test
 ```{r}
-set.seed(55)
+set.seed(56)
 
-train_ind = sample(seq_len(nrow(data)), size = floor(0.7 * nrow(data)))
+train_ind = sample(seq_len(nrow(data)), size = floor(0.8 * nrow(data)))
 train = data[train_ind, ]
 test = data[-train_ind, ]
 layer_train = layer[train_ind, ]
@@ -64,16 +64,36 @@ n_test = dim(test)[1]
 
 ### Régression logistique
 ```{r warning=FALSE}
+rates_train = data.frame(matrix(ncol = 4, nrow = 0))
+rates_test = data.frame(matrix(ncol = 4, nrow = 0))
+colnames(rates_train) = c("tn", "fn", "fp", "tp")
+colnames(rates_test) = c("tn", "fn", "fp", "tp")
+
+dec_thr = 0.5
 for (yname in ynames) {
   fmla = as.formula(paste0(yname, "~", strsumx))
   model = glm(fmla, family=binomial(link='logit'), data=train)
+  
   pred_train = predict(model, train, type = "response")
-  pred_train = ifelse(pred_train > 0.5,1,0)
+  pred_train = ifelse(pred_train > dec_thr,1,0)
+  
   pred_test = predict(model, test, type = "response")
-  pred_test = ifelse(pred_test > 0.5,1,0)
+  pred_test = ifelse(pred_test > dec_thr,1,0)
+  
   layer_train[[yname]] = pred_train
   layer_test[[yname]] = pred_test
+  
+  rates_train[yname,] = as.vector(table(train[[yname]], pred_train))
+  rates_test[yname,] = as.vector(table(test[[yname]], pred_test))
 }
+```
+
+### Analyse
+```{r}
+totals_train = colSums(rates_train)
+totals_train
+totals_test = colSums(rates_test)
+totals_test
 ```
 
 ## Régression
@@ -98,7 +118,6 @@ ynames = colnames(disfish)
 data = data.frame(lanfish,disfish)
 train = data[train_ind, ]
 test = data[-train_ind, ]
-
 ```
 
 ### Initialisation des scores
@@ -128,6 +147,17 @@ lmnz_test_mse = 0
 ```
 
 ### Régression
+Modèles : 
+
+- base : on prédit la moyenne pour chaque espèce,
+- rf : random forest,
+- lm : modèle linéaire basique.
+
+Procédures : 
+
+- tr : on entraîne avec toutes les données, puis on applique le "calque" sur les prédictions,
+- nz : on entraîne sur les données non-nulles ($i \in [1, n]$ tels que $Y^i_k \neq 0$), on prédit sur les données non-détectées à zéro.
+
 ```{r warning=FALSE}
 for (yname in ynames) {
   baseline = mean(train[[yname]])

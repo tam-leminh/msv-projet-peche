@@ -404,9 +404,9 @@ colnames(layer) = ynames</code></pre>
 </div>
 <div id="données-dentraînementtest" class="section level3">
 <h3>Données d’entraînement/test</h3>
-<pre class="r"><code>set.seed(55)
+<pre class="r"><code>set.seed(56)
 
-train_ind = sample(seq_len(nrow(data)), size = floor(0.7 * nrow(data)))
+train_ind = sample(seq_len(nrow(data)), size = floor(0.8 * nrow(data)))
 train = data[train_ind, ]
 test = data[-train_ind, ]
 layer_train = layer[train_ind, ]
@@ -416,16 +416,39 @@ n_test = dim(test)[1]</code></pre>
 </div>
 <div id="régression-logistique" class="section level3">
 <h3>Régression logistique</h3>
-<pre class="r"><code>for (yname in ynames) {
+<pre class="r"><code>rates_train = data.frame(matrix(ncol = 4, nrow = 0))
+rates_test = data.frame(matrix(ncol = 4, nrow = 0))
+colnames(rates_train) = c(&quot;tn&quot;, &quot;fn&quot;, &quot;fp&quot;, &quot;tp&quot;)
+colnames(rates_test) = c(&quot;tn&quot;, &quot;fn&quot;, &quot;fp&quot;, &quot;tp&quot;)
+
+dec_thr = 0.5
+for (yname in ynames) {
   fmla = as.formula(paste0(yname, &quot;~&quot;, strsumx))
   model = glm(fmla, family=binomial(link=&#39;logit&#39;), data=train)
+  
   pred_train = predict(model, train, type = &quot;response&quot;)
-  pred_train = ifelse(pred_train &gt; 0.5,1,0)
+  pred_train = ifelse(pred_train &gt; dec_thr,1,0)
+  
   pred_test = predict(model, test, type = &quot;response&quot;)
-  pred_test = ifelse(pred_test &gt; 0.5,1,0)
+  pred_test = ifelse(pred_test &gt; dec_thr,1,0)
+  
   layer_train[[yname]] = pred_train
   layer_test[[yname]] = pred_test
+  
+  rates_train[yname,] = as.vector(table(train[[yname]], pred_train))
+  rates_test[yname,] = as.vector(table(test[[yname]], pred_test))
 }</code></pre>
+</div>
+<div id="analyse" class="section level3">
+<h3>Analyse</h3>
+<pre class="r"><code>totals_train = colSums(rates_train)
+totals_train</code></pre>
+<pre><code>##    tn    fn    fp    tp 
+## 29811  3681  3462  6396</code></pre>
+<pre class="r"><code>totals_test = colSums(rates_test)
+totals_test</code></pre>
+<pre><code>##   tn   fn   fp   tp 
+## 7037 1327 3903 1530</code></pre>
 </div>
 </div>
 <div id="régression" class="section level2">
@@ -478,6 +501,17 @@ lmnz_test_mse = 0</code></pre>
 </div>
 <div id="régression-1" class="section level3">
 <h3>Régression</h3>
+<p>Modèles :</p>
+<ul>
+<li>base : on prédit la moyenne pour chaque espèce,</li>
+<li>rf : random forest,</li>
+<li>lm : modèle linéaire basique.</li>
+</ul>
+<p>Procédures :</p>
+<ul>
+<li>tr : on entraîne avec toutes les données, puis on applique le “calque” sur les prédictions,</li>
+<li>nz : on entraîne sur les données non-nulles (<span class="math inline">\(i \in [1, n]\)</span> tels que <span class="math inline">\(Y^i_k \neq 0\)</span>), on prédit sur les données calquées non-nulles.</li>
+</ul>
 <pre class="r"><code>for (yname in ynames) {
   baseline = mean(train[[yname]])
   base_train_mse = base_train_mse + mean((train[[yname]] - baseline)^2)
@@ -553,7 +587,7 @@ lmnz_test_mse = 0</code></pre>
 }</code></pre>
 </div>
 </div>
-<div id="analyse" class="section level2">
+<div id="analyse-1" class="section level2">
 <h2>Analyse</h2>
 <pre class="r"><code>scores[&#39;base&#39;,] = as.vector(c(sqrt(base_train_mse), sqrt(base_test_mse)))
 scores[&#39;rf&#39;,] = as.vector(c(sqrt(rf_train_mse), sqrt(rf_test_mse)))
@@ -563,14 +597,14 @@ scores[&#39;lm_tr&#39;,] = as.vector(c(sqrt(lmtr_train_mse), sqrt(lmtr_test_mse)
 scores[&#39;rf_nz&#39;,] = as.vector(c(sqrt(rfnz_train_mse), sqrt(rfnz_test_mse)))
 scores[&#39;lm_nz&#39;,] = as.vector(c(sqrt(lmnz_train_mse), sqrt(lmnz_test_mse)))
 scores</code></pre>
-<pre><code>##            train        test
-## base    60420.17    62635.27
-## rf      25161.68    55810.32
-## lm      41569.30   150824.78
-## rf_tr   27823.79    59728.19
-## lm_tr   41060.02    94334.15
-## rf_nz   29260.73    63190.19
-## lm_nz 1757275.66 19178761.22</code></pre>
+<pre><code>##           train        test
+## base   59539.81    66867.50
+## rf     24309.80    60085.99
+## lm     41095.15    91200.97
+## rf_tr  28004.56    64275.90
+## lm_tr  41030.57    86835.08
+## rf_nz  28905.75    68531.41
+## lm_nz 217252.90 10098804.58</code></pre>
 </div>
 
 

@@ -6,10 +6,8 @@ library(caTools)
 library(glasso)
 library(igraph)
 library(qgraph)
-library(blockmodels)
 library(Matrix)
 library(sfsmisc)
-library(flare)
 library(huge)
 
 #Keep only fish data

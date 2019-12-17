@@ -55,7 +55,7 @@ test = data[-train_ind, ]
 ### Initialisation
 
 ```{r}
-scores = data.frame(matrix(ncol = 4, nrow = 0))
+scores = data.frame(matrix(ncol = 2, nrow = 0))
 colnames(scores) = c("train", "test")
 base_train_mse = 0
 base_test_mse = 0
