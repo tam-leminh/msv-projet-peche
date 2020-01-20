@@ -2,6 +2,8 @@ library(dplyr)
 library(tidyverse)
 library(ggplot2)
 library(randomForest)
+library(glmnet)
+library(glmnetUtils)
 
 #Keep only fish data
 
@@ -42,15 +44,35 @@ layer_test = layer[-train_ind, ]
 n_train = dim(train)[1]
 n_test = dim(test)[1]
 
+rates_train = data.frame(matrix(ncol = 4, nrow = 0))
+rates_test = data.frame(matrix(ncol = 4, nrow = 0))
+colnames(rates_train) = c("tn", "fn", "fp", "tp")
+colnames(rates_test) = c("tn", "fn", "fp", "tp")
+
+dec_thr = 0.5
 for (yname in ynames) {
-  fmla = as.formula(paste0(yname, "~", strsumx))
-  model = glm(fmla, family=binomial(link='logit'), data=train)
-  pred_train = predict(model, train, type = "response")
-  pred_train = ifelse(pred_train > 0.5,1,0)
-  pred_test = predict(model, test, type = "response")
-  pred_test = ifelse(pred_test > 0.5,1,0)
-  layer_train[[yname]] = pred_train
-  layer_test[[yname]] = pred_test
+  if (sum(train[[yname]])==0) {
+    layer_train[[yname]][is.na(layer_train[[yname]])] = 0
+    layer_test[[yname]][is.na(layer_test[[yname]])] = 0
+  }
+  else {
+    fmla = as.formula(paste0(yname, "~", strsumx))
+    #model = glm(fmla, family="binomial", data=train)
+    cv.model = cv.glmnet(x=data.matrix(train[c(xnames)]), y=  data.matrix(train[[yname]]), family="binomial")
+    #pred_train = predict(model, train, type = "response")
+    pred_train = predict(model, newx = data.matrix(train[c(xnames)]), type="response", s = 0)
+    pred_train = ifelse(pred_train > dec_thr,1,0)
+    
+    #pred_test = predict(model, test, type = "response")
+    pred_test = predict(model, newx = data.matrix(test[c(xnames)]), type="response", s = 0)
+    pred_test = ifelse(pred_test > dec_thr,1,0)
+    
+    layer_train[[yname]] = pred_train
+    layer_test[[yname]] = pred_test
+    
+    rates_train[yname,] = as.vector(table(train[[yname]], pred_train))
+    rates_test[yname,] = as.vector(table(test[[yname]], pred_test))
+  }
 }
 
 

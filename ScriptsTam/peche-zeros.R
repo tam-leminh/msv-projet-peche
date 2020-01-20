@@ -47,3 +47,11 @@ rates$sens = rates$tp/(rates$tp + rates$fn)
 rates$spec = rates$tn/(rates$tn + rates$fp)
 
 colSums(rates)
+
+plot(rates$tp + rates$fn, rates$sens, xlab="Vrai nombre de positifs", ylab="Sensitivité")
+plot(rates$fp + rates$tn, rates$spec, xlab="Vrai nombre de négatifs", ylab="Spécificité")
+hist(rates$sens)
+hist(rates$spec)
+plot(rates$spec, rates$sens, xlab="Spécificité", ylab="Sensitivité")
+plot(rates$tp + rates$fn, rates$tp/(rates$tp + rates$fp), xlab="Vrai nombre de positifs", ylab="Précision")
+plot(rates$fp + rates$tn, rates$tn/(rates$tn + rates$fn), xlab="Vrai nombre de négatifs", ylab="Valeur prédictive négative")
