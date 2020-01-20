@@ -29,24 +29,38 @@ nobs = dim(data)[1]
 set.seed(55)
 
 strsumx = paste(xnames, collapse= "+")
+pred = data.frame(matrix(ncol = length(ynames), nrow = nobs))
 rates = data.frame(matrix(ncol = 4, nrow = 0))
 layer = data.frame(matrix(ncol = length(ynames), nrow = nobs))
+
+thresholds = data.frame(matrix(ncol = 4, nrow = 0))
+
 colnames(rates) = c("tn", "fn", "fp", "tp")
 colnames(layer) = ynames
 
 for (yname in ynames) {
   fmla = as.formula(paste0(yname, "~", strsumx))
   model = glm(fmla, family=binomial(link='logit'), data=data)
-  pred = predict(model, data,type = "response")
-  pred = ifelse(pred > 0.5,1,0)
-  rates[yname,] = as.vector(table(Truth=data[[yname]], Prediction=pred))
-  layer[[yname]] = pred
+  pred[[yname]] = predict(model, data,type = "response")
+}
+for (threshold in seq(0.0, 1.0, by=0.1)) {
+  for (yname in ynames) {
+    decision = ifelse(pred[[yname]] > threshold,1,0)
+    rates[yname,] = as.vector(table(Truth=data[[yname]], Prediction=decision))
+  }
+  sum_rates = colSums(rates)
+  thresholds[threshold,] = c(tn = sum_rates['tn'], tn = sum_rates['fn'], tn = sum_rates['fp'], tn = sum_rates['tp'])
+}
+for (yname in ynames) {
+  decision = ifelse(pred[[yname]] > 0.5,1,0)
+  rates[yname,] = as.vector(table(Truth=data[[yname]], Prediction=decision))
+  layer[[yname]] = decision
 }
 
 rates$sens = rates$tp/(rates$tp + rates$fn)
 rates$spec = rates$tn/(rates$tn + rates$fp)
 
-colSums(rates)
+colSums(rates)['fn']
 
 plot(rates$tp + rates$fn, rates$sens, xlab="Vrai nombre de positifs", ylab="Sensitivité")
 plot(rates$fp + rates$tn, rates$spec, xlab="Vrai nombre de négatifs", ylab="Spécificité")
