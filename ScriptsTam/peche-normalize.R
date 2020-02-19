@@ -27,15 +27,6 @@ list <-lapply(1:ncol(lanfish_10),
 
 cowplot::plot_grid(plotlist = list) 
 
-skewv = vector()
-skewv0 = vector()
-for xname in xnames {
-  if !is.nan(skewness(lanfish[[xname]])) {
-    skewv = skewness(lanfish$X22)
-    skewv0 = skewness(lanfish$X22[lanfish$X22>0])
-  }
-}
-is.nan(skewness(lanfish$X20))
 
 hist(apply(lanfish[which(colSums(lanfish)>0)], FUN=skewness, MARGIN=2), breaks = 10, xlab="Skewness", main="Skewness per landed species")
 apply(disfish[which(colSums(disfish)>0)], FUN=skewness, MARGIN=2)
