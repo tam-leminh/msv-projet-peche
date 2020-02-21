@@ -57,14 +57,14 @@ for (yname in ynames) {
   }
   else {
     fmla = as.formula(paste0(yname, "~", strsumx))
-    #model = glm(fmla, family="binomial", data=train)
-    cv.model = cv.glmnet(x=data.matrix(train[c(xnames)]), y=  data.matrix(train[[yname]]), family="binomial")
-    #pred_train = predict(model, train, type = "response")
-    pred_train = predict(model, newx = data.matrix(train[c(xnames)]), type="response", s = 0)
+    model = glm(fmla, family="binomial", data=train)
+    #cv.model = cv.glmnet(x=data.matrix(train[c(xnames)]), y=  data.matrix(train[[yname]]), family="binomial")
+    pred_train = predict(model, train, type = "response")
+    #pred_train = predict(model, newx = data.matrix(train[c(xnames)]), type="response", s = 0)
     pred_train = ifelse(pred_train > dec_thr,1,0)
     
-    #pred_test = predict(model, test, type = "response")
-    pred_test = predict(model, newx = data.matrix(test[c(xnames)]), type="response", s = 0)
+    pred_test = predict(model, test, type = "response")
+    #pred_test = predict(model, newx = data.matrix(test[c(xnames)]), type="response", s = 0)
     pred_test = ifelse(pred_test > dec_thr,1,0)
     
     layer_train[[yname]] = pred_train
@@ -78,8 +78,8 @@ for (yname in ynames) {
 
 
 
-lanfish <- lanquant.co[c(8:157)]
-disfish <- disquant.co[c(8:157)]
+lanfish <- log(lanquant.co[c(8:157)]+exp(1))
+disfish <- log(disquant.co[c(8:157)]+exp(1))
 colnames(lanfish) <- paste0("X",c(1:150))
 colnames(disfish) <- paste0("Y",c(1:150))
 lanzeros = which(colSums(lanfish)!=0)
@@ -102,14 +102,10 @@ base_train_mse = 0
 base_test_mse = 0
 rf_train_mse = 0
 rf_test_mse = 0
-rftr_train_mse = 0
-rftr_test_mse = 0
 rfnz_train_mse = 0
 rfnz_test_mse = 0
 lm_train_mse = 0
 lm_test_mse = 0
-lmtr_train_mse = 0
-lmtr_test_mse = 0
 lmnz_train_mse = 0
 lmnz_test_mse = 0
 
@@ -125,21 +121,17 @@ for (yname in ynames) {
   pred_test = predict(rf_mod, test)
   rf_train_mse = rf_train_mse + mean((train[[yname]] - pred_train)^2)
   rf_test_mse = rf_test_mse + mean((test[[yname]] - pred_test)^2)
-  rftr_train_mse = rftr_train_mse + mean((train[[yname]] - pred_train*layer_train[[yname]])^2)
-  rftr_test_mse = rftr_test_mse + mean((test[[yname]] - pred_test*layer_test[[yname]])^2)
   
   lm_mod <- lm(fmla, data=train)
   pred_train = predict(lm_mod, train)
   pred_test = predict(lm_mod, test)
   lm_train_mse = lm_train_mse + mean((train[[yname]] - pred_train)^2)
   lm_test_mse = lm_test_mse + mean((test[[yname]] - pred_test)^2)
-  lmtr_train_mse = lmtr_train_mse + mean((train[[yname]] - pred_train*layer_train[[yname]])^2)
-  lmtr_test_mse = lmtr_test_mse + mean((test[[yname]] - pred_test*layer_test[[yname]])^2)
   
   #S'il n'y a pas que des zéros dans le train (sinon on prédit zéro pour tout le vecteur -> prendre le coût du vecteur)
-  if (sum(train[yname])!=0) {
-    rfnz_mod <- randomForest(fmla, data=train[which(train[[yname]]!=0),], ntree=100, mtry=40)
-    lmnz_mod <- lm(fmla, data=train[which(train[[yname]]!=0),])
+  if (sum(train[yname])>dim(train[yname])[1]) {
+    rfnz_mod <- randomForest(fmla, data=train[which(train[[yname]]>1.01),], ntree=100, mtry=40)
+    lmnz_mod <- lm(fmla, data=train[which(train[[yname]]>1.01),])
     
     nb_1_train = sum(layer_train[[yname]])
     nb_1_test = sum(layer_test[[yname]])
@@ -185,10 +177,9 @@ for (yname in ynames) {
   print(lmnz_train_mse)
   print(lmnz_test_mse)
 }
+
 scores['base',] = as.vector(c(sqrt(base_train_mse), sqrt(base_test_mse)))
 scores['rf',] = as.vector(c(sqrt(rf_train_mse), sqrt(rf_test_mse)))
 scores['lm',] = as.vector(c(sqrt(lm_train_mse), sqrt(lm_test_mse)))
-scores['rf_tr',] = as.vector(c(sqrt(rftr_train_mse), sqrt(rftr_test_mse)))
-scores['lm_tr',] = as.vector(c(sqrt(lmtr_train_mse), sqrt(lmtr_test_mse)))
 scores['rf_nz',] = as.vector(c(sqrt(rfnz_train_mse), sqrt(rfnz_test_mse)))
 scores['lm_nz',] = as.vector(c(sqrt(lmnz_train_mse), sqrt(lmnz_test_mse)))

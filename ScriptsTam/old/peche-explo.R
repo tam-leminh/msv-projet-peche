@@ -27,6 +27,5 @@ as.matrix(all_lan_and_dis)
 barplot(t(as.matrix(filtered)), beside=TRUE)
 
 colSums(lanfish!=0)
-nonlan = which(colSums(lanfish)!=0)
+nonlan = which(colSums(disfish)!=0)
 
-data_lan_nz <- subset(data, select=c(nonlan+1))

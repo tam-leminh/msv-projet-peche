@@ -49,7 +49,7 @@ for (threshold in seq(0.0, 1.0, by=0.1)) {
     rates[yname,] = as.vector(table(Truth=data[[yname]], Prediction=decision))
   }
   sum_rates = colSums(rates)
-  thresholds[threshold,] = c(tn = sum_rates['tn'], tn = sum_rates['fn'], tn = sum_rates['fp'], tn = sum_rates['tp'])
+  thresholds[threshold,] = c(tn = sum_rates['tn'], fn = sum_rates['fn'], fp = sum_rates['fp'], tp = sum_rates['tp'])
 }
 for (yname in ynames) {
   decision = ifelse(pred[[yname]] > 0.5,1,0)
@@ -64,8 +64,8 @@ colSums(rates)['fn']
 
 plot(rates$tp + rates$fn, rates$sens, xlab="Vrai nombre de positifs", ylab="Sensitivité")
 plot(rates$fp + rates$tn, rates$spec, xlab="Vrai nombre de négatifs", ylab="Spécificité")
-hist(rates$sens)
-hist(rates$spec)
+hist(rates$sens, xlab="Sensitivité", main="")
+hist(rates$spec, xlab="Spécificité", main="")
 plot(rates$spec, rates$sens, xlab="Spécificité", ylab="Sensitivité")
 plot(rates$tp + rates$fn, rates$tp/(rates$tp + rates$fp), xlab="Vrai nombre de positifs", ylab="Précision")
 plot(rates$fp + rates$tn, rates$tn/(rates$tn + rates$fn), xlab="Vrai nombre de négatifs", ylab="Valeur prédictive négative")
