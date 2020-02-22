@@ -1,9 +1,11 @@
 if (!file.exists("c_lasso_models.Rdata")) {
   source("c_lasso.R")
-  
 }
 if (!file.exists("r_lasso_models.Rdata")) {
   source("r_lasso.R")
+}
+if (!file.exists("r_relax_models.Rdata")) {
+  source("r_relax.R")
 }
 if (!file.exists("r_randomforest_models.Rdata")) {
   source("r_randomforest.R")
@@ -14,7 +16,11 @@ source("format_data.R")
 
 load("c_lasso_models.Rdata")
 load("r_lasso_models.Rdata")
+load("r_relax_models.Rdata")
 load("r_randomforest_models.Rdata")
+
+c_method <- "lasso1se"
+r_method <- "lasso1se"
 
 ret <- format_data(log=TRUE, month=TRUE, rect=TRUE)
 data <- ret$data
@@ -40,13 +46,25 @@ baseline1_test <- colMeans(train)
 dec_loop <- function(yname, dec_thr, c_method, r_method) {
   layers_train <- list()
   layers_test <- list()
-  if (c_method == 'lasso') {
+  if (c_method == 'lassomin') {
     if (yname %in% names(c_lasso_fit)) {
       zero_pred_train <- predict(c_lasso_fit[[yname]], newx=data.matrix(train[c(xnames)]), 
-                                 type="response", s=c_lasso_lambda[[yname]])
+                                 type="response", s=c_lasso_lambdamin[[yname]])
       layers_train[[yname]] <- ifelse(zero_pred_train > dec_thr, 1, 0)
       zero_pred_test <- predict(c_lasso_fit[[yname]], newx=data.matrix(test[c(xnames)]), 
-                                type="response", s=c_lasso_lambda[[yname]])
+                                type="response", s=c_lasso_lambdamin[[yname]])
+      layers_test[[yname]] <- ifelse(zero_pred_test > dec_thr, 1, 0)
+    } else {
+      layers_train[[yname]] <- data.matrix(rep(0, n_train))
+      layers_test[[yname]] <- data.matrix(rep(0, n_test))
+    }
+  } else if (c_method == 'lasso1se') {
+    if (yname %in% names(c_lasso_fit)) {
+      zero_pred_train <- predict(c_lasso_fit[[yname]], newx=data.matrix(train[c(xnames)]), 
+                                 type="response", s=c_lasso_lambda1se[[yname]])
+      layers_train[[yname]] <- ifelse(zero_pred_train > dec_thr, 1, 0)
+      zero_pred_test <- predict(c_lasso_fit[[yname]], newx=data.matrix(test[c(xnames)]), 
+                                type="response", s=c_lasso_lambda1se[[yname]])
       layers_test[[yname]] <- ifelse(zero_pred_test > dec_thr, 1, 0)
     } else {
       layers_train[[yname]] <- data.matrix(rep(0, n_train))
@@ -63,13 +81,49 @@ dec_loop <- function(yname, dec_thr, c_method, r_method) {
   
   predicted_discards_train <- data.frame(matrix(ncol = 0, nrow = n_train))
   predicted_discards_test <- data.frame(matrix(ncol = 0, nrow = n_test))
-  if (r_method == 'lasso') {
+  if (r_method == 'lassomin') {
     if (yname %in% names(r_lasso_fit)) {
       value_pred_train <- predict(r_lasso_fit[[yname]], newx=data.matrix(train[c(xnames)]), 
-                                  type="response", s=r_lasso_lambda[[yname]])
+                                  type="response", s=r_lasso_lambdamin[[yname]])
       predicted_discards_train[yname] <- ifelse(layers_train[[yname]]==0, 1, value_pred_train)
       value_pred_test <- predict(r_lasso_fit[[yname]], newx=data.matrix(test[c(xnames)]), 
-                                  type="response", s=r_lasso_lambda[[yname]])
+                                  type="response", s=r_lasso_lambdamin[[yname]])
+      predicted_discards_test[yname] <- ifelse(layers_test[[yname]]==0, 1, value_pred_test)
+    } else {
+      predicted_discards_train[yname] <- data.matrix(rep(1, n_train))
+      predicted_discards_test[yname] <- data.matrix(rep(1, n_test))
+    }
+  } else if (r_method == 'lasso1se') {
+    if (yname %in% names(r_lasso_fit)) {
+      value_pred_train <- predict(r_lasso_fit[[yname]], newx=data.matrix(train[c(xnames)]), 
+                                  type="response", s=r_lasso_lambda1se[[yname]])
+      predicted_discards_train[yname] <- ifelse(layers_train[[yname]]==0, 1, value_pred_train)
+      value_pred_test <- predict(r_lasso_fit[[yname]], newx=data.matrix(test[c(xnames)]), 
+                                 type="response", s=r_lasso_lambda1se[[yname]])
+      predicted_discards_test[yname] <- ifelse(layers_test[[yname]]==0, 1, value_pred_test)
+    } else {
+      predicted_discards_train[yname] <- data.matrix(rep(1, n_train))
+      predicted_discards_test[yname] <- data.matrix(rep(1, n_test))
+    }
+  } else if (r_method == 'relaxmin') {
+    if (yname %in% names(r_relax_fit)) {
+      value_pred_train <- predict(r_relax_fit[[yname]], newx=data.matrix(train[c(xnames)]), 
+                                  type="response", s=r_relax_lambdamin[[yname]], gamma=r_relax_gammamin[[yname]])
+      predicted_discards_train[yname] <- ifelse(layers_train[[yname]]==0, 1, value_pred_train)
+      value_pred_test <- predict(r_relax_fit[[yname]], newx=data.matrix(test[c(xnames)]), 
+                                 type="response", s=r_relax_lambdamin[[yname]], gamma=r_relax_gammamin[[yname]])
+      predicted_discards_test[yname] <- ifelse(layers_test[[yname]]==0, 1, value_pred_test)
+    } else {
+      predicted_discards_train[yname] <- data.matrix(rep(1, n_train))
+      predicted_discards_test[yname] <- data.matrix(rep(1, n_test))
+    }
+  } else if (r_method == 'relax1se') {
+    if (yname %in% names(r_relax_fit)) {
+      value_pred_train <- predict(r_relax_fit[[yname]], newx=data.matrix(train[c(xnames)]), 
+                                  type="response", s=r_relax_lambda1se[[yname]], gamma=r_relax_gamma1se[[yname]])
+      predicted_discards_train[yname] <- ifelse(layers_train[[yname]]==0, 1, value_pred_train)
+      value_pred_test <- predict(r_relax_fit[[yname]], newx=data.matrix(test[c(xnames)]), 
+                                 type="response", s=r_relax_lambda1se[[yname]], gamma=r_relax_gamma1se[[yname]])
       predicted_discards_test[yname] <- ifelse(layers_test[[yname]]==0, 1, value_pred_test)
     } else {
       predicted_discards_train[yname] <- data.matrix(rep(1, n_train))
@@ -105,7 +159,7 @@ k <- 0
 for (yname in ynames) {
   for (d in seq(0.,1.,0.02)) {
     k = k+1
-    scores[k,] <- c(yname, d, as.list(dec_loop(yname, d, 'lasso', 'randomforest')))
+    scores[k,] <- c(yname, d, as.list(dec_loop(yname, d, c_method, r_method)))
   }
 }
 
