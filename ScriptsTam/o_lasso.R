@@ -17,15 +17,17 @@ train <- ret$train
 test <- ret$test
 train_ind <- ret$train_ind
 
-r_randomforest_fit <- list()
+o_lasso_fit <- list()
+o_lasso_lambdamin <- list()
+o_lasso_lambda1se <- list()
 for (yname in ynames) {
   train_nz <- train[which(train[[yname]]>1),]
   if (dim(train_nz)[1] > 5) {
-    rf_mod <- randomForest(x=train_nz[c(xnames)], y=train_nz[[yname]], ntree=500, mtry=length(xnames))
-    r_randomforest_fit[[yname]] <- rf_mod
-    pred_train <- predict(rf_mod, train_nz[c(xnames)])
-    print(yname)
-    print(mean((pred_train-train_nz[[yname]])^2))
+    cvfit <- cv.glmnet(data.matrix(train[c(xnames)]), 
+                       data.matrix(train[[yname]]), family = "gaussian", nfolds=6)
+    o_lasso_fit[[yname]] <- cvfit$glmnet.fit
+    o_lasso_lambdamin[[yname]] <- cvfit$lambda.min
+    o_lasso_lambda1se[[yname]] <- cvfit$lambda.1se
   }
 }
-save(r_randomforest_fit, file="r_randomforest_models.Rdata")
+save(o_lasso_fit, o_lasso_lambdamin, o_lasso_lambda1se, file="o_lasso_models.Rdata")

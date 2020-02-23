@@ -6,6 +6,8 @@ library(glmnet)
 library(glmnetUtils)
 library(data.table)
 library(glmnet)
+library(gplots)
+library(RColorBrewer)
 
 format_data <- function(month=FALSE, rect=FALSE, log=FALSE, binary=FALSE, nz_y=FALSE) {
   lanfish = lanquant.co[c(8:157)]
