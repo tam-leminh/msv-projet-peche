@@ -30,19 +30,3 @@ for (yname in ynames) {
 }
 save(o_randomforest_fit, file="o_randomforest_models.Rdata")
 
-imp_matrix <- matrix(0, nrow=length(xnames), ncol=length(o_randomforest_fit))
-rownames(imp_matrix) <- xnames
-colnames(imp_matrix) <- names(o_randomforest_fit)
-for (yname in names(o_randomforest_fit)) {
-  imp_matrix[,yname] <- o_randomforest_fit[[yname]]$importance
-  print(dim(o_randomforest_fit[[yname]]$importance))
-}
-o_randomforest_fit[['Y86']]$importance[order(-o_randomforest_fit[['Y86']]$importance),][1:10]
-o_randomforest_fit[['Y85']]$importance[order(-o_randomforest_fit[['Y85']]$importance),][1:10]
-
-dim(o_randomforest_fit[['Y85']]$importance)
-dev.off()
-dev.new(height=12, width=5)
-heatmap.2(imp_matrix, Rowv = TRUE, Colv = TRUE, scale="none", dendrogram="none", trace="none", 
-          breaks=c(0.1, 1, 10, 100, 1000), key=FALSE, keysize=0.2, 
-          col=brewer.pal(4,"OrRd"), cexRow=0.5)
