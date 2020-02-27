@@ -1,0 +1,20 @@
+Plan rapport projet
+
+I  ) Intro, contexte et enjeux écologiques
+II ) Données
+	1) Présentation
+	2) Notations
+III) Modèle linéaire
+	1) Approche probabiliste : modèle linéaire
+	2) De la difficulté du problème (hétéroscédasticité, excès de zéros, complexité, etc.)
+	3) Sélection de variables, variables explicatives
+	--> Nécessité d'autres approches
+IV ) Alternatives/Améliorations
+	1) Modèles joints (corrélation entre les Y)
+	2) Modèle à 2 étapes
+	3) Modèles non-probabilistes : arbres, random forest
+	4) Clustering ???
+V  ) Discussion
+	1) Étude d'exemples d'espèce -> raisons succès/échecs
+	2) Simu ???
+	3) Conclusion
