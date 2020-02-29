@@ -17,15 +17,24 @@ disfish <- disquant.co[c(8:157)]
 
 #Clustering with logsums of landed and discarded fish
 
-logdisfish <- log(colSums(disfish))
-loglanfish <- log(colSums(lanfish))
+logdisfish <- log10(colSums(disfish)+10)
+loglanfish <- log10(colSums(lanfish)+10)
 
 logdisfish[is.infinite(logdisfish)] <- 0
 loglanfish[is.infinite(loglanfish)] <- 0
 
 loglandis <- data.frame(logdisfish, loglanfish)
+loglandis
+p1 <- ggplot(loglandis, aes(logdisfish, loglanfish)) + geom_point(size = 2, colour="darkcyan")
+p1
 
-plot(loglandis)
+nzc_lanfish <- log10(colSums(lanfish!=0)+10)
+nzc_disfish <- log10(colSums(disfish!=0)+10)
+nzc_landis <- data.frame(nzc_disfish, nzc_lanfish)
+p2 <- ggplot(nzc_landis, aes(nzc_disfish, nzc_lanfish)) + geom_point(size = 2, colour="darkcyan")
+p2
+
+plot_grid(p1, p2, labels=c("A", "B"), ncol = 2, nrow = 1)
 
 #CV for number of logclusters
 
@@ -45,11 +54,16 @@ ggplot(ratio_ss, aes(cluster, ratio)) +
 
 #Build logclusters
 
-nb_logclusters = 6
+nb_logclusters = 8
 
 km_model <- kmeans(loglandis, centers = nb_logclusters, nstart=20)
 loglandis$cluster <- km_model$cluster
-ggplot(loglandis, aes(logdisfish, loglanfish, col = factor(cluster))) + geom_point(size = 2)
+nzc_landis$cluster <- km_model$cluster
+p1 <- ggplot(loglandis, aes(logdisfish, loglanfish, col = factor(cluster))) + geom_point(size = 2) +
+  xlab("Total discarded fish (log10)") + ylab("Total landed fish (log10)")
+p2 <- ggplot(nzc_landis, aes(nzc_disfish, nzc_lanfish, col = factor(cluster))) + geom_point(size = 2) +
+  xlab("Number of times discarded (log10)") + ylab("Number of times landed (log10)")
+plot_grid(p1, p2, labels=c("A", "B"), ncol = 2, nrow = 1)
 
 summary(km_model)
 

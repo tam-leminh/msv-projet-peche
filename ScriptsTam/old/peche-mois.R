@@ -4,9 +4,28 @@ library(ggplot2)
 library(modelr)
 library(caTools)
 library(glmnet)
+library(cowplot)
 
+par(mfrow=c(1,2))
 months = table(lanquant.co$month)
-barplot(months, main="Number of trips", xlab="Month")
+barplot(months, xlab="Mois", ylab="Fréquence")
+years = table(lanquant.co$year)
+barplot(years, xlab="Année", ylab="Fréquence")
+
+months
+years
+
+p1<-ggplot(data=lanquant.co, aes(x=month)) +
+  geom_bar(stat="count", fill="darkorchid4")
+
+p1
+
+p2<-ggplot(data=lanquant.co, aes(x=year)) +
+  geom_bar(stat="count", fill="darkolivegreen")
+
+p2
+
+plot_grid(p1, p2, labels=c("A", "B"), ncol = 2, nrow = 1)
 
 data <- lanquant.co
 

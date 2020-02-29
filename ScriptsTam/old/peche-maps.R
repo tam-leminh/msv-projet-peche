@@ -12,18 +12,18 @@ disfish <- disquant.co[c(8:157)]
 lan_coord <- lanquant.co[c("lonIni", "latIni")]
 
 world_map <- map_data("world")
-p <- ggplot() + coord_fixed() +
+p <- ggplot() + coord_fixed(xlim=c(-5.5,-1), ylim=c(45,48)) +
   xlab("") + ylab("")
 base_france <- p + geom_polygon(data=subset(world_map, world_map$region=="France"), aes(x=long, y=lat, group=group), 
-                                     colour="black", fill="darkslategray3")
+                                     colour="black", fill="coral2")
 
 base_france
 
 map_data <- 
   base_france +
   geom_point(data=lanquant.co, 
-             aes(x=lonIni, y=latIni), colour="firebrick", 
-             fill="Pink",pch=21, size=5, alpha=I(0.7))
+             aes(x=lonIni, y=latIni), colour="darkcyan", size=2, alpha=I(0.9)) +
+  xlab("lon") + ylab("lat")
 
 map_data
 
