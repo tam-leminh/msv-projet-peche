@@ -15,7 +15,7 @@ load("o_lasso_models.Rdata")
 load("o_relax_models.Rdata")
 load("o_randomforest_models.Rdata")
 
-o_method <- "lasso1se"
+o_method <- "randomforest"
 
 ret <- format_data(log=TRUE, month=TRUE, rect=TRUE)
 data <- ret$data

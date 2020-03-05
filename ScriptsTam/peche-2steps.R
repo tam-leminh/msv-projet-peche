@@ -198,7 +198,7 @@ b2 <- mean(best_scores$b2_test)
 #Plots
 
 plot(single_score$dec_thr, single_score$mod_train, col='red', lty=1, type="o", cex=1, xlim=c(0.2,.8), ylim=c(0.1,0.42), 
-     xlab="Decision threshold", ylab="MSE", main=paste0("Error of 2-step model (C=", c_method, ", R=", r_method, ")"))
+     xlab="Decision threshold", ylab="Mean log error", main=paste0("Error of 2-step model (C=", c_method, ", R=", r_method, ")"))
 lines(single_score$dec_thr, single_score$mod_test, col='blue', type="o", cex=1)
 abline(h=mult_train, col="red", lty=2)
 abline(h=mult_test, col="blue", lty=2)

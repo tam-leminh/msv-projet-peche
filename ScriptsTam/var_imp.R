@@ -43,11 +43,14 @@ imp_matrix <- matrix(0, nrow=length(xnames), ncol=length(o_randomforest_fit))
 rownames(imp_matrix) <- xnames
 colnames(imp_matrix) <- names(o_randomforest_fit)
 for (yname in names(o_randomforest_fit)) {
-  imp_matrix[,yname] <- o_randomforest_fit[[yname]]$importance
+  imp_matrix[,yname] <- o_randomforest_fit[[yname]]$importance[,1]
 }
 heatmap.2(imp_matrix, Rowv = TRUE, Colv = TRUE, scale="none", dendrogram="none", trace="none", 
-          breaks=c(0.1, 1, 10, 100, 1000), key=FALSE, keysize=0.7, 
-          col=brewer.pal(4,"OrRd"), cexRow=0.5, main="Variable importance for random forest")
+          breaks=c(0.001, 0.01, 0.1, 0.5, 1), key=FALSE, keysize=0.4, 
+          col=brewer.pal(4,"OrRd"), cexCol=0.5, cexRow=0.5)
+legend(0.02,0.95, legend=c("> 0.5", "0.1-0.5", "0.01-0.1","<0.01"), fill=brewer.pal(4,"OrRd"), cex=0.5)
+
+
 
 ##Classification LASSO lambda1se
 
@@ -59,9 +62,10 @@ for (yname in names(c_lasso_fit)) {
   imp_matrix[,yname] <- a[rownames(a)!="(Intercept)",1]
 }
 imp_matrix[imp_matrix != 0] <- 1
+
 heatmap.2(imp_matrix, Rowv = TRUE, Colv = TRUE, scale="none", 
-          dendrogram="none", trace="none", key=FALSE, keysize=0.7, 
-          col=brewer.pal(3,"OrRd"), cexRow=0.5, cexCol=0.5, main="Selected variables for C-LASSO 1SE")
+          dendrogram="none", trace="none", key=FALSE, keysize=0.4, 
+          col=brewer.pal(3,"OrRd"), cexRow=0.5, cexCol=0.5)
 
 ##Classification LASSO lambdamin
 
@@ -74,8 +78,8 @@ for (yname in names(c_lasso_fit)) {
 }
 imp_matrix[imp_matrix != 0] <- 1
 heatmap.2(imp_matrix, Rowv = TRUE, Colv = TRUE, scale="none", 
-          dendrogram="none", trace="none", key=FALSE, keysize=0.7, 
-          col=brewer.pal(3,"OrRd"), cexRow=0.5, cexCol=0.5, main="Selected variables for C-LASSO MIN")
+          dendrogram="none", trace="none", key=FALSE, keysize=0.4, 
+          col=brewer.pal(3,"OrRd"), cexRow=0.5, cexCol=0.5)
 
 ##Regression LASSO lambda1se
 
@@ -88,8 +92,8 @@ for (yname in names(r_lasso_fit)) {
 }
 imp_matrix[imp_matrix != 0] <- 1
 heatmap.2(imp_matrix, Rowv = TRUE, Colv = TRUE, scale="none", 
-          dendrogram="none", trace="none", key=FALSE, keysize=0.7, 
-          col=brewer.pal(3,"OrRd"), cexRow=0.5, cexCol=0.5, main="Selected variables for R-LASSO 1SE")
+          dendrogram="none", trace="none", key=FALSE, keysize=0.4, 
+          col=brewer.pal(3,"OrRd"), cexRow=0.5, cexCol=0.5)
 
 ##Regression LASSO lambdamin
 
@@ -103,4 +107,5 @@ for (yname in names(r_lasso_fit)) {
 imp_matrix[imp_matrix != 0] <- 1
 heatmap.2(imp_matrix, Rowv = TRUE, Colv = TRUE, scale="none", 
           dendrogram="none", trace="none", key=FALSE, keysize=0.7, 
-          col=brewer.pal(3,"OrRd"), cexRow=0.5, cexCol=0.5, main="Selected variables for R-LASSO MIN")
+          col=brewer.pal(3,"OrRd"), cexRow=0.5, cexCol=0.5)
+
