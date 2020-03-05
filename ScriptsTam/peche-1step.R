@@ -15,7 +15,7 @@ load("o_lasso_models.Rdata")
 load("o_relax_models.Rdata")
 load("o_randomforest_models.Rdata")
 
-o_method <- "relax1se"
+o_method <- "lasso1se"
 
 ret <- format_data(log=TRUE, month=TRUE, rect=TRUE)
 data <- ret$data
@@ -48,8 +48,8 @@ dec_loop <- function(yname, o_method) {
       predicted_discards_test[yname] <- predict(o_lasso_fit[[yname]], newx=data.matrix(test[c(xnames)]), 
                                  type="response", s=o_lasso_lambdamin[[yname]])
     } else {
-      predicted_discards_train[yname] <- data.matrix(rep(1, n_train))
-      predicted_discards_test[yname] <- data.matrix(rep(1, n_test))
+      predicted_discards_train[yname] <- data.matrix(rep(0, n_train))
+      predicted_discards_test[yname] <- data.matrix(rep(0, n_test))
     }
   } else if (o_method == 'lasso1se') {
     if (yname %in% names(o_lasso_fit)) {
@@ -58,8 +58,8 @@ dec_loop <- function(yname, o_method) {
       predicted_discards_test[yname] <- predict(o_lasso_fit[[yname]], newx=data.matrix(test[c(xnames)]), 
                                  type="response", s=o_lasso_lambda1se[[yname]])
     } else {
-      predicted_discards_train[yname] <- data.matrix(rep(1, n_train))
-      predicted_discards_test[yname] <- data.matrix(rep(1, n_test))
+      predicted_discards_train[yname] <- data.matrix(rep(0, n_train))
+      predicted_discards_test[yname] <- data.matrix(rep(0, n_test))
     }
   } else if (o_method == 'relaxmin') {
     if (yname %in% names(o_relax_fit)) {
@@ -68,8 +68,8 @@ dec_loop <- function(yname, o_method) {
       predicted_discards_test[yname] <- predict(o_relax_fit[[yname]], newx=data.matrix(test[c(xnames)]), 
                                  type="response", s=o_relax_lambdamin[[yname]], gamma=o_relax_gammamin[[yname]])
     } else {
-      predicted_discards_train[yname] <- data.matrix(rep(1, n_train))
-      predicted_discards_test[yname] <- data.matrix(rep(1, n_test))
+      predicted_discards_train[yname] <- data.matrix(rep(0, n_train))
+      predicted_discards_test[yname] <- data.matrix(rep(0, n_test))
     }
   } else if (o_method == 'relax1se') {
     if (yname %in% names(o_relax_fit)) {
@@ -78,26 +78,26 @@ dec_loop <- function(yname, o_method) {
       predicted_discards_test[yname] <- predict(o_relax_fit[[yname]], newx=data.matrix(test[c(xnames)]), 
                                  type="response", s=o_relax_lambda1se[[yname]], gamma=o_relax_gamma1se[[yname]])
     } else {
-      predicted_discards_train[yname] <- data.matrix(rep(1, n_train))
-      predicted_discards_test[yname] <- data.matrix(rep(1, n_test))
+      predicted_discards_train[yname] <- data.matrix(rep(0, n_train))
+      predicted_discards_test[yname] <- data.matrix(rep(0, n_test))
     }
   } else if (o_method == 'randomforest') {
     if (yname %in% names(o_randomforest_fit)) {
       predicted_discards_train[yname] <- predict(o_randomforest_fit[[yname]], newdata=train[c(xnames)], type="response")
       predicted_discards_test[yname] <- predict(o_randomforest_fit[[yname]], newdata=test[c(xnames)], type="response")
     } else {
-      predicted_discards_train[yname] <- data.matrix(rep(1, n_train))
-      predicted_discards_test[yname] <- data.matrix(rep(1, n_test))
+      predicted_discards_train[yname] <- data.matrix(rep(0, n_train))
+      predicted_discards_test[yname] <- data.matrix(rep(0, n_test))
     }
   } else {
     stop("Don't know this regression method")
   }
   
   scores <- list()
-  scores[["lm_train"]] <- mean(abs(predicted_discards_train[[yname]] - train[[yname]])^2)
-  scores[["b1_train"]] <- mean(abs(baseline1_train[[yname]] - train[[yname]])^2)
-  scores[["lm_test"]] <- mean(abs(predicted_discards_test[[yname]] - test[[yname]])^2)
-  scores[["b1_test"]] <- mean(abs(baseline1_test[[yname]] - test[[yname]])^2)
+  scores[["lm_train"]] <- mean(abs(predicted_discards_train[[yname]] - train[[yname]]))
+  scores[["b1_train"]] <- mean(abs(baseline1_train[[yname]] - train[[yname]]))
+  scores[["lm_test"]] <- mean(abs(predicted_discards_test[[yname]] - test[[yname]]))
+  scores[["b1_test"]] <- mean(abs(baseline1_test[[yname]] - test[[yname]]))
   return(scores)
 }
 

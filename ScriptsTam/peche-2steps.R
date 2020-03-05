@@ -24,7 +24,7 @@ load("r_relax_models.Rdata")
 load("r_randomforest_models.Rdata")
 
 c_method <- "lassomin"
-r_method <- "lasso1se"
+r_method <- "lassomin"
 
 ret <- format_data(log=TRUE, month=TRUE, rect=TRUE)
 data <- ret$data
@@ -90,8 +90,8 @@ dec_loop <- function(yname, dec_thr, c_method, r_method) {
 
   baseline2_train <- list()
   baseline2_test <- list()
-  baseline2_train[[yname]] <- ifelse(layers_train[[yname]]==0, 1, mean(train[train[yname] > 1,][[yname]]))
-  baseline2_test[[yname]] <- ifelse(layers_test[[yname]]==0, 1, mean(train[train[yname] > 1,][[yname]]))
+  baseline2_train[[yname]] <- ifelse(layers_train[[yname]]==0, 0, mean(train[train[yname] > 0,][[yname]]))
+  baseline2_test[[yname]] <- ifelse(layers_test[[yname]]==0, 0, mean(train[train[yname] > 0,][[yname]]))
   
   predicted_discards_train <- data.frame(matrix(ncol = 0, nrow = n_train))
   predicted_discards_test <- data.frame(matrix(ncol = 0, nrow = n_test))
@@ -99,71 +99,71 @@ dec_loop <- function(yname, dec_thr, c_method, r_method) {
     if (yname %in% names(r_lasso_fit)) {
       value_pred_train <- predict(r_lasso_fit[[yname]], newx=data.matrix(train[c(xnames)]), 
                                   type="response", s=r_lasso_lambdamin[[yname]])
-      predicted_discards_train[yname] <- ifelse(layers_train[[yname]]==0, 1, value_pred_train)
+      predicted_discards_train[yname] <- ifelse(layers_train[[yname]]==0, 0, value_pred_train)
       value_pred_test <- predict(r_lasso_fit[[yname]], newx=data.matrix(test[c(xnames)]), 
                                   type="response", s=r_lasso_lambdamin[[yname]])
-      predicted_discards_test[yname] <- ifelse(layers_test[[yname]]==0, 1, value_pred_test)
+      predicted_discards_test[yname] <- ifelse(layers_test[[yname]]==0, 0, value_pred_test)
     } else {
-      predicted_discards_train[yname] <- data.matrix(rep(1, n_train))
-      predicted_discards_test[yname] <- data.matrix(rep(1, n_test))
+      predicted_discards_train[yname] <- data.matrix(rep(0, n_train))
+      predicted_discards_test[yname] <- data.matrix(rep(0, n_test))
     }
   } else if (r_method == 'lasso1se') {
     if (yname %in% names(r_lasso_fit)) {
       value_pred_train <- predict(r_lasso_fit[[yname]], newx=data.matrix(train[c(xnames)]), 
                                   type="response", s=r_lasso_lambda1se[[yname]])
-      predicted_discards_train[yname] <- ifelse(layers_train[[yname]]==0, 1, value_pred_train)
+      predicted_discards_train[yname] <- ifelse(layers_train[[yname]]==0, 0, value_pred_train)
       value_pred_test <- predict(r_lasso_fit[[yname]], newx=data.matrix(test[c(xnames)]), 
                                  type="response", s=r_lasso_lambda1se[[yname]])
-      predicted_discards_test[yname] <- ifelse(layers_test[[yname]]==0, 1, value_pred_test)
+      predicted_discards_test[yname] <- ifelse(layers_test[[yname]]==0, 0, value_pred_test)
     } else {
-      predicted_discards_train[yname] <- data.matrix(rep(1, n_train))
-      predicted_discards_test[yname] <- data.matrix(rep(1, n_test))
+      predicted_discards_train[yname] <- data.matrix(rep(0, n_train))
+      predicted_discards_test[yname] <- data.matrix(rep(0, n_test))
     }
   } else if (r_method == 'relaxmin') {
     if (yname %in% names(r_relax_fit)) {
       value_pred_train <- predict(r_relax_fit[[yname]], newx=data.matrix(train[c(xnames)]), 
                                   type="response", s=r_relax_lambdamin[[yname]], gamma=r_relax_gammamin[[yname]])
-      predicted_discards_train[yname] <- ifelse(layers_train[[yname]]==0, 1, value_pred_train)
+      predicted_discards_train[yname] <- ifelse(layers_train[[yname]]==0, 0, value_pred_train)
       value_pred_test <- predict(r_relax_fit[[yname]], newx=data.matrix(test[c(xnames)]), 
                                  type="response", s=r_relax_lambdamin[[yname]], gamma=r_relax_gammamin[[yname]])
-      predicted_discards_test[yname] <- ifelse(layers_test[[yname]]==0, 1, value_pred_test)
+      predicted_discards_test[yname] <- ifelse(layers_test[[yname]]==0, 0, value_pred_test)
     } else {
-      predicted_discards_train[yname] <- data.matrix(rep(1, n_train))
-      predicted_discards_test[yname] <- data.matrix(rep(1, n_test))
+      predicted_discards_train[yname] <- data.matrix(rep(0, n_train))
+      predicted_discards_test[yname] <- data.matrix(rep(0, n_test))
     }
   } else if (r_method == 'relax1se') {
     if (yname %in% names(r_relax_fit)) {
       value_pred_train <- predict(r_relax_fit[[yname]], newx=data.matrix(train[c(xnames)]), 
                                   type="response", s=r_relax_lambda1se[[yname]], gamma=r_relax_gamma1se[[yname]])
-      predicted_discards_train[yname] <- ifelse(layers_train[[yname]]==0, 1, value_pred_train)
+      predicted_discards_train[yname] <- ifelse(layers_train[[yname]]==0, 0, value_pred_train)
       value_pred_test <- predict(r_relax_fit[[yname]], newx=data.matrix(test[c(xnames)]), 
                                  type="response", s=r_relax_lambda1se[[yname]], gamma=r_relax_gamma1se[[yname]])
-      predicted_discards_test[yname] <- ifelse(layers_test[[yname]]==0, 1, value_pred_test)
+      predicted_discards_test[yname] <- ifelse(layers_test[[yname]]==0, 0, value_pred_test)
     } else {
-      predicted_discards_train[yname] <- data.matrix(rep(1, n_train))
-      predicted_discards_test[yname] <- data.matrix(rep(1, n_test))
+      predicted_discards_train[yname] <- data.matrix(rep(0, n_train))
+      predicted_discards_test[yname] <- data.matrix(rep(0, n_test))
     }
   } else if (r_method == 'randomforest') {
     if (yname %in% names(r_randomforest_fit)) {
       value_pred_train <- predict(r_randomforest_fit[[yname]], newdata=train[c(xnames)], type="response")
-      predicted_discards_train[yname] <- ifelse(layers_train[[yname]]==0, 1, value_pred_train)
+      predicted_discards_train[yname] <- ifelse(layers_train[[yname]]==0, 0, value_pred_train)
       value_pred_test <- predict(r_randomforest_fit[[yname]], newdata=test[c(xnames)], type="response")
-      predicted_discards_test[yname] <- ifelse(layers_test[[yname]]==0, 1, value_pred_test)
+      predicted_discards_test[yname] <- ifelse(layers_test[[yname]]==0, 0, value_pred_test)
     } else {
-      predicted_discards_train[yname] <- data.matrix(rep(1, n_train))
-      predicted_discards_test[yname] <- data.matrix(rep(1, n_test))
+      predicted_discards_train[yname] <- data.matrix(rep(0, n_train))
+      predicted_discards_test[yname] <- data.matrix(rep(0, n_test))
     }
   } else {
     stop("Don't know this regression method")
   }
   
   scores <- list()
-  scores[["mod_train"]] <- mean(abs(predicted_discards_train[[yname]] - train[[yname]])^2)
-  scores[["b1_train"]] <- mean(abs(baseline1_train[[yname]] - train[[yname]])^2)
-  scores[["b2_train"]] <- mean(abs(baseline2_train[[yname]] - train[[yname]])^2)
-  scores[["mod_test"]] <- mean(abs(predicted_discards_test[[yname]] - test[[yname]])^2)
-  scores[["b1_test"]] <- mean(abs(baseline1_test[[yname]] - test[[yname]])^2)
-  scores[["b2_test"]] <- mean(abs(baseline2_test[[yname]] - test[[yname]])^2)
+  scores[["mod_train"]] <- mean(abs(predicted_discards_train[[yname]] - train[[yname]]))
+  scores[["b1_train"]] <- mean(abs(baseline1_train[[yname]] - train[[yname]]))
+  scores[["b2_train"]] <- mean(abs(baseline2_train[[yname]] - train[[yname]]))
+  scores[["mod_test"]] <- mean(abs(predicted_discards_test[[yname]] - test[[yname]]))
+  scores[["b1_test"]] <- mean(abs(baseline1_test[[yname]] - test[[yname]]))
+  scores[["b2_test"]] <- mean(abs(baseline2_test[[yname]] - test[[yname]]))
   return(scores)
 }
 
@@ -171,7 +171,7 @@ scores <- data.frame(yname=character(), dec_thr=numeric(), mod_train=numeric(), 
                      b2_train=numeric(), mod_test=numeric(), b1_test=numeric(), b2_test=numeric(), stringsAsFactors=FALSE)
 k <- 0
 for (yname in ynames) {
-  for (d in seq(0.,1.,0.02)) {
+  for (d in seq(0.2,0.8,0.02)) {
     k = k+1
     scores[k,] <- c(yname, d, as.list(dec_loop(yname, d, c_method, r_method)))
   }
@@ -188,18 +188,29 @@ best_scores <- setDT(scores)[, .SD[which.min(mod_train)],
               .SDcols=c('dec_thr', 'mod_train', 'b1_train', 'b2_train', 'mod_test', 'b1_test', 'b2_test'), by = yname]
 
 colMeans(best_scores[,c('mod_train', 'b1_train', 'b2_train', 'mod_test', 'b1_test', 'b2_test')])
+mult_train <- mean(best_scores$mod_train)
+mult_test <- mean(best_scores$mod_test)
+
+#Baselines
+b1 <- mean(best_scores$b1_test)
+b2 <- mean(best_scores$b2_test)
 
 #Plots
 
-plot(single_score$dec_thr, single_score$mod_train, col='red', lty=1, type="o", xlim=c(0.,1.), ylim=c(0.,1), 
+plot(single_score$dec_thr, single_score$mod_train, col='red', lty=1, type="o", cex=1, xlim=c(0.2,.8), ylim=c(0.1,0.42), 
      xlab="Decision threshold", ylab="MSE", main=paste0("Error of 2-step model (C=", c_method, ", R=", r_method, ")"))
-lines(single_score$dec_thr, single_score$mod_test, col='blue', type="o")
-abline(h=mean(best_scores$mod_train), col="red", lty=2)
-abline(h=mean(best_scores$mod_test), col="blue", lty=2)
-abline(h=mean(best_scores$b1_test), col="brown", lty=1)
-abline(h=mean(best_scores$b2_test), col="black", lty=2)
-legend(0.7, 1.8, legend=c("mod_train (single)", "mod_test (single)", "mod_train (multiple)", "mod_test (multiple)", "b1_test", "b2_test"), 
-       col=c("red", "blue", "red", "blue", "brown", "black"), lty=c(1,1,2,2,1,2), pch=list(1,1,"","","",""))
+lines(single_score$dec_thr, single_score$mod_test, col='blue', type="o", cex=1)
+abline(h=mult_train, col="red", lty=2)
+abline(h=mult_test, col="blue", lty=2)
+abline(h=b1, col="brown", lty=1)
+abline(h=b2, col="black", lty=2)
+legend(0.60, 0.20, legend=c(paste("train (single), min =", round(min(single_score$mod_train),3)),
+                            paste("test (single), min =", round(min(single_score$mod_test),3)), 
+                            paste("train (multiple) =", round(mult_train,3)), 
+                            paste("test (multiple) =", round(mult_test,3)), 
+                            paste("b1_test =", round(b1,3)),
+                            paste("b2_test =", round(b2,3))), 
+       col=c("red", "blue", "red", "blue", "brown", "black"), lty=c(1,1,2,2,1,2), pch=list(1,1,"","","",""), cex = 0.75)
 
 #hist(best_scores$dec_thr, breaks=50, 
 #     xlab="Decision threshold", ylab="Species", main="Histogram of best decision thresholds/species")

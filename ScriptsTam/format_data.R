@@ -25,7 +25,7 @@ format_data <- function(month=FALSE, rect=FALSE, log=FALSE, binary=FALSE, nz_y=F
   lanfish = subset(lanfish, select=c(lan_nz))
   disfish = subset(disfish, select=c(dis_nz))
   if (log) {
-    disfish = log10(disfish + 10)
+    disfish = log10(disfish + 1)
   }
   if (month) {
     lanfish$sinmonth = sin(as.numeric(lanquant.co$month)*pi/6)

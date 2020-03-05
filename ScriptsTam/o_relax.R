@@ -23,7 +23,7 @@ o_relax_lambda1se <- list()
 o_relax_gammamin <- list()
 o_relax_gamma1se <- list()
 for (yname in ynames) {
-  train_nz <- train[which(train[[yname]]>1),]
+  train_nz <- train[which(train[[yname]]>0),]
   if (dim(train_nz)[1] > 5) {
     cvfit <- cv.glmnet(data.matrix(train[c(xnames)]), data.matrix(train[[yname]]), 
                        family = "gaussian", nfolds=6, relax=TRUE)

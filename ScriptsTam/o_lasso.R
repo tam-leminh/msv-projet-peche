@@ -21,7 +21,7 @@ o_lasso_fit <- list()
 o_lasso_lambdamin <- list()
 o_lasso_lambda1se <- list()
 for (yname in ynames) {
-  train_nz <- train[which(train[[yname]]>1),]
+  train_nz <- train[which(train[[yname]]>0),]
   if (dim(train_nz)[1] > 5) {
     cvfit <- cv.glmnet(data.matrix(train[c(xnames)]), 
                        data.matrix(train[[yname]]), family = "gaussian", nfolds=6)
