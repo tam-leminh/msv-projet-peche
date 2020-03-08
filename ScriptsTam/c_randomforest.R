@@ -27,7 +27,7 @@ c_randomforest_fit <- list()
 test_error <- list()
 for (yname in ynames) {
   if (sum(train[[yname]]) > 6) {
-    rf_mod <- randomForest(x=train[c(xnames)], y=as.factor(train[[yname]]), ntree=5000, mtry=7)
+    rf_mod <- randomForest(x=train[c(xnames)], y=as.factor(train[[yname]]), ntree=500, mtry=7)
     c_randomforest_fit[[yname]] <- rf_mod
     pred_train <- predict(rf_mod, train[c(xnames)], type="prob")[,2]
     print(yname)

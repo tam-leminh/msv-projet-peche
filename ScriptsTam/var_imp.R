@@ -81,6 +81,24 @@ heatmap.2(imp_matrix, Rowv = TRUE, Colv = TRUE, scale="none",
           dendrogram="none", trace="none", key=FALSE, keysize=0.4, 
           col=brewer.pal(3,"OrRd"), cexRow=0.5, cexCol=0.5)
 
+frequency <- rowSums(imp_matrix)[order(rowSums(imp_matrix))]
+a <- as.data.frame(frequency)
+a$varnames <- rownames(a)
+rownames(a) <- NULL
+
+
+ggplot(a[a['frequency']>10,], aes(x=reorder(varnames, frequency), y=frequency)) + 
+  geom_point(size=2, colour="goldenrod4") +
+  geom_segment(aes(x=varnames,xend=varnames,y=0,yend=frequency), size=1.5, colour="goldenrod3") +
+  geom_point(size=3, colour="goldenrod4") +
+  ylab("Times selected") +
+  xlab("Variable") +
+  coord_flip()
+
+
+p <- ggplot(a, aes(x=rowSums.imp_matrix.)) + geom_bar(stat="identity")
+plot(p)
+
 ##Regression LASSO lambda1se
 
 imp_matrix <- matrix(0, nrow=length(xnames), ncol=length(r_lasso_fit))

@@ -159,35 +159,37 @@ dec_loop <- function(yname, dec_thr, c_method, r_method) {
   
   scores <- list()
   scores[["mod_train"]] <- mean(abs(predicted_discards_train[[yname]] - train[[yname]]))
+  scores[["b0_train"]] <- mean(abs(train[[yname]]))
   scores[["b1_train"]] <- mean(abs(baseline1_train[[yname]] - train[[yname]]))
   scores[["b2_train"]] <- mean(abs(baseline2_train[[yname]] - train[[yname]]))
   scores[["mod_test"]] <- mean(abs(predicted_discards_test[[yname]] - test[[yname]]))
+  scores[["b0_test"]] <- mean(abs(test[[yname]]))
   scores[["b1_test"]] <- mean(abs(baseline1_test[[yname]] - test[[yname]]))
   scores[["b2_test"]] <- mean(abs(baseline2_test[[yname]] - test[[yname]]))
   return(scores)
 }
 
-scores <- data.frame(yname=character(), dec_thr=numeric(), mod_train=numeric(), b1_train=numeric(), 
-                     b2_train=numeric(), mod_test=numeric(), b1_test=numeric(), b2_test=numeric(), stringsAsFactors=FALSE)
+scores <- data.frame(yname=character(), dec_thr=numeric(), mod_train=numeric(), b0_train=numeric(), b1_train=numeric(), 
+                     b2_train=numeric(), mod_test=numeric(), b0_test=numeric(), b1_test=numeric(), b2_test=numeric(), stringsAsFactors=FALSE)
 k <- 0
 for (yname in ynames) {
-  for (d in seq(0.2,0.8,0.02)) {
+  for (d in seq(0.,1.,0.02)) {
     k = k+1
     scores[k,] <- c(yname, d, as.list(dec_loop(yname, d, c_method, r_method)))
   }
 }
 
 #Single decision threshold
-single_score <- aggregate(scores[,c(3:8)], list(dec_thr = scores$dec_thr), mean)
+single_score <- aggregate(scores[,c(3:10)], list(dec_thr = scores$dec_thr), mean)
 
 #Multiple decision threshold
 thresholds <- numeric()
 thresholds[ynames] <- as.numeric(setDT(scores)[, .SD[which.min(mod_train)], .SDcols='dec_thr', by = yname][['dec_thr']])
 
 best_scores <- setDT(scores)[, .SD[which.min(mod_train)], 
-              .SDcols=c('dec_thr', 'mod_train', 'b1_train', 'b2_train', 'mod_test', 'b1_test', 'b2_test'), by = yname]
+              .SDcols=c('dec_thr', 'mod_train', 'b0_train', 'b1_train', 'b2_train', 'mod_test', 'b0_test', 'b1_test', 'b2_test'), by = yname]
 
-colMeans(best_scores[,c('mod_train', 'b1_train', 'b2_train', 'mod_test', 'b1_test', 'b2_test')])
+colMeans(best_scores[,c('mod_train', 'b0_train', 'b1_train', 'b2_train', 'mod_test', 'b0_test', 'b1_test', 'b2_test')])
 mult_train <- mean(best_scores$mod_train)
 mult_test <- mean(best_scores$mod_test)
 
@@ -214,4 +216,6 @@ legend(0.60, 0.20, legend=c(paste("train (single), min =", round(min(single_scor
 
 #hist(best_scores$dec_thr, breaks=50, 
 #     xlab="Decision threshold", ylab="Species", main="Histogram of best decision thresholds/species")
-
+h <- ggplot(data=best_scores, aes(x=dec_thr)) +
+  geom_bar(stat="bin", fill="royalblue3", breaks=seq(0, 1, 0.04), colour='darkorange4')
+plot(h)
