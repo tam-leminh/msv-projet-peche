@@ -1,7 +1,7 @@
 source("miseenformedonnees.R")
 source("format_data.R")
 
-ret <- format_data(log=TRUE, month=TRUE, rect=TRUE)
+ret <- format_data(log=FALSE, month=TRUE, rect=TRUE)
 data <- ret$data
 xnames <- ret$xnames
 ynames <- ret$ynames
