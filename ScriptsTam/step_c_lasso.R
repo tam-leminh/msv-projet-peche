@@ -1,3 +1,4 @@
+#Train lasso models for C step
 source("miseenformedonnees.R")
 source("format_data.R")
 
@@ -8,20 +9,11 @@ ynames <- ret$ynames
 nobs <- dim(data)[1]
 strsumx <- paste(xnames, collapse= "+")
 
-#Build train and test sets
-
 set.seed(55)
-
 ret <- create_train_test(data, 0.7)
 train <- ret$train
 test <- ret$test
 train_ind <- ret$train_ind
-
-layer <- data.frame(matrix(ncol = length(ynames), nrow = nobs))
-layer_train <- layer[train_ind, ]
-layer_test <- layer[-train_ind, ]
-n_train <- dim(train)[1]
-n_test <- dim(test)[1]
 
 c_lasso_fit <- list()
 c_lasso_lambdamin <- list()
@@ -35,5 +27,4 @@ for (yname in ynames) {
     c_lasso_lambda1se[[yname]] <- cvfit$lambda.1se
   }
 }
-save(c_lasso_fit, c_lasso_lambdamin, c_lasso_lambda1se, file="c_lasso_models.Rdata")
-
+save(c_lasso_fit, c_lasso_lambdamin, c_lasso_lambda1se, file="models/step_c_lasso_models.Rdata")

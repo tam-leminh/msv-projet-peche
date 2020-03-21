@@ -1,3 +1,4 @@
+#Train relaxed lasso models for R step
 source("miseenformedonnees.R")
 source("format_data.R")
 
@@ -8,10 +9,7 @@ ynames <- ret$ynames
 nobs <- dim(data)[1]
 strsumx <- paste(xnames, collapse= "+")
 
-#Build train and test sets
-
 set.seed(55)
-
 ret <- create_train_test(data, 0.7)
 train <- ret$train
 test <- ret$test
@@ -35,4 +33,4 @@ for (yname in ynames) {
   }
 }
 save(r_relax_fit, r_relax_lambdamin, r_relax_gammamin, 
-     r_relax_lambda1se, r_relax_gamma1se, file="r_relax_models.Rdata")
+     r_relax_lambda1se, r_relax_gamma1se, file="models/step_r_relax_models.Rdata")
