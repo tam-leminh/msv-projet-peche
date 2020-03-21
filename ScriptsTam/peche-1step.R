@@ -17,7 +17,7 @@ load("o_randomforest_models.Rdata")
 
 o_method <- "randomforest"
 
-ret <- format_data(log=FALSE, month=TRUE, rect=TRUE)
+ret <- format_data(log=TRUE, month=TRUE, rect=TRUE)
 data <- ret$data
 xnames <- ret$xnames
 ynames <- ret$ynames
@@ -94,27 +94,19 @@ dec_loop <- function(yname, o_method) {
   }
   
   scores <- list()
-  #scores[["lm_train"]] <- mean(abs(predicted_discards_train[[yname]] - train[[yname]]))
-  #scores[["b0_train"]] <- mean(abs(train[[yname]]))
-  #scores[["b1_train"]] <- mean(abs(baseline1_train[[yname]] - train[[yname]]))
-  #scores[["lm_test"]] <- mean(abs(predicted_discards_test[[yname]] - test[[yname]]))
-  #scores[["b0_test"]] <- mean(abs(test[[yname]]))
-  #scores[["b1_test"]] <- mean(abs(baseline1_test[[yname]] - test[[yname]]))
-  scores[["lm_train"]] <- mean(abs(log10(predicted_discards_train[[yname]]+1) - log10(train[[yname]]+1)))
-  scores[["b0_train"]] <- mean(abs(log10(train[[yname]]+1)))
-  scores[["b1_train"]] <- mean(abs(log10(baseline1_train[[yname]]+1) - log10(train[[yname]]+1)))
-  scores[["lm_test"]] <- mean(abs(log10(predicted_discards_test[[yname]]+1) - log10(test[[yname]]+1)))
-  scores[["b0_test"]] <- mean(abs(log10(test[[yname]]+1)))
-  scores[["b1_test"]] <- mean(abs(log10(baseline1_test[[yname]]+1) - log10(test[[yname]]+1)))
+  scores[["lm_train"]] <- mean(abs(predicted_discards_train[[yname]] - train[[yname]]))
+  scores[["b1_train"]] <- mean(abs(baseline1_train[[yname]] - train[[yname]]))
+  scores[["lm_test"]] <- mean(abs(predicted_discards_test[[yname]] - test[[yname]]))
+  scores[["b1_test"]] <- mean(abs(baseline1_test[[yname]] - test[[yname]]))
   return(scores)
 }
 
-scores <- data.frame(yname=character(), lm_train=numeric(), b0_train=numeric(), b1_train=numeric(), 
-                     lm_test=numeric(), b0_test=numeric(), b1_test=numeric(), stringsAsFactors=FALSE)
+scores <- data.frame(yname=character(), lm_train=numeric(), b1_train=numeric(), 
+                     lm_test=numeric(), b1_test=numeric(), stringsAsFactors=FALSE)
 k <- 0
 for (yname in ynames) {
   k = k+1
   scores[k,] <- c(yname, as.list(dec_loop(yname, o_method)))
 }
 
-colMeans(scores[,c('lm_train', 'b0_train', 'b1_train', 'lm_test', 'b0_test', 'b1_test')])
+colMeans(scores[,c('lm_train', 'b1_train', 'lm_test', 'b1_test')])

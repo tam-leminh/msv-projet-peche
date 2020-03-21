@@ -10,6 +10,8 @@ library(Matrix)
 library(sfsmisc)
 library(huge)
 
+source("miseenformedonnees.R")
+
 #Keep only fish data
 
 lan <- lanquant.co[c(8:157)]
@@ -17,10 +19,25 @@ dis <- disquant.co[c(8:157)]
 colnames(lan) <- paste0("X",c(1:150))
 colnames(dis) <- paste0("Y",c(1:150))
 fishnodes <- data.frame(lan, dis)
+
+nonlan = which(colSums(lan)!=0)
+nondis = which(colSums(dis)!=0)
+lannz <- subset(lan, select=c(nonlan))
+disnz <- subset(dis, select=c(nondis))
+corrmat <- cor(subset(lan, select=c(nonlan)), 
+               subset(dis, select=c(nondis)))
+col<- colorRampPalette(c("blue", "white", "red"))(256)
+heatmap(x = corrmat, col = col, Colv = NA, Rowv=NA, cexRow = 0.5, cexCol = 0.5)
+
+
+
+
 nonlan = which(colSums(fishnodes)!=0)
 nonlan
 fishnodes <- subset(fishnodes, select=c(nonlan))
+
 S <- cov(fishnodes, fishnodes)
+
 names <- rownames(S)
 s <- posdefify(S)
 colnames(s) <- names

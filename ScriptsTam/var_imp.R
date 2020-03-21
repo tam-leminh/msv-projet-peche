@@ -48,7 +48,7 @@ for (yname in names(o_randomforest_fit)) {
 heatmap.2(imp_matrix, Rowv = TRUE, Colv = TRUE, scale="none", dendrogram="none", trace="none", 
           breaks=c(0.001, 0.01, 0.1, 0.5, 1), key=FALSE, keysize=0.4, 
           col=brewer.pal(4,"OrRd"), cexCol=0.5, cexRow=0.5)
-legend(0.02,0.95, legend=c("> 0.5", "0.1-0.5", "0.01-0.1","<0.01"), fill=brewer.pal(4,"OrRd"), cex=0.5)
+legend(0.02,0.95, legend=c("<0.01", "0.01-0.1", "0.1-0.5", "> 0.5"), fill=brewer.pal(4,"OrRd"), cex=0.5)
 
 
 
