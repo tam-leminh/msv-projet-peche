@@ -8,10 +8,7 @@ ynames <- ret$ynames
 nobs <- dim(data)[1]
 strsumx <- paste(xnames, collapse= "+")
 
-#Build train and test sets
-
 set.seed(55)
-
 ret <- create_train_test(data, 0.7)
 train <- ret$train
 test <- ret$test
@@ -35,4 +32,4 @@ for (yname in ynames) {
   }
 }
 save(o_relax_fit, o_relax_lambdamin, o_relax_gammamin, 
-     o_relax_lambda1se, o_relax_gamma1se, file="o_relax_models.Rdata")
+     o_relax_lambda1se, o_relax_gamma1se, file="models/step_o_relax_models.Rdata")

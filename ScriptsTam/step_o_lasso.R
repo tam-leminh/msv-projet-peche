@@ -1,17 +1,14 @@
 source("miseenformedonnees.R")
 source("format_data.R")
 
-ret <- format_data(log=FALSE, month=TRUE, rect=TRUE)
+ret <- format_data(log=TRUE, month=TRUE, rect=TRUE)
 data <- ret$data
 xnames <- ret$xnames
 ynames <- ret$ynames
 nobs <- dim(data)[1]
 strsumx <- paste(xnames, collapse= "+")
 
-#Build train and test sets
-
 set.seed(55)
-
 ret <- create_train_test(data, 0.7)
 train <- ret$train
 test <- ret$test
@@ -30,4 +27,4 @@ for (yname in ynames) {
     o_lasso_lambda1se[[yname]] <- cvfit$lambda.1se
   }
 }
-save(o_lasso_fit, o_lasso_lambdamin, o_lasso_lambda1se, file="o_lasso_models.Rdata")
+save(o_lasso_fit, o_lasso_lambdamin, o_lasso_lambda1se, file="models/step_o_lasso_models.Rdata")

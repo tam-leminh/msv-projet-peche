@@ -1,22 +1,31 @@
-if (!file.exists("o_lasso_models.Rdata")) {
-  source("o_lasso.R")
+#1-step model
+
+#Check all models
+if (!file.exists("models/step_o_lasso_models.Rdata")) {
+  source("step_o_lasso.R")
 }
-if (!file.exists("o_relax_models.Rdata")) {
-  source("o_relax.R")
+if (!file.exists("models/step_o_relax_models.Rdata")) {
+  source("step_o_relax.R")
 }
-if (!file.exists("o_randomforest_models.Rdata")) {
-  source("o_randomforest.R")
+if (!file.exists("models/step_o_randomforest_models.Rdata")) {
+  source("step_o_randomforest.R")
 }
 
 source("miseenformedonnees.R")
 source("format_data.R")
 
-load("o_lasso_models.Rdata")
-load("o_relax_models.Rdata")
-load("o_randomforest_models.Rdata")
+load("models/step_o_lasso_models.Rdata")
+load("models/step_o_relax_models.Rdata")
+load("models/step_o_randomforest_models.Rdata")
 
+#Model selection (only one step)
+#o_method <- "lassomin"
+#o_method <- "lasso1se"
+#o_method <- "relaxmin"
+#o_method <- "relax1se"
 o_method <- "randomforest"
 
+#Data formatting
 ret <- format_data(log=TRUE, month=TRUE, rect=TRUE)
 data <- ret$data
 xnames <- ret$xnames
@@ -25,9 +34,7 @@ nobs = dim(data)[1]
 strsumx = paste(xnames, collapse= "+")
 
 #Build train and test sets
-
-set.seed(55)
-
+set.seed(55) #for reproducibility
 ret <- create_train_test(data, 0.7)
 train <- ret$train
 test <- ret$test
@@ -35,9 +42,11 @@ train_ind <- ret$train_ind
 n_train = dim(train)[1]
 n_test = dim(test)[1]
 
+#Compute means for B1
 baseline1_train <- colMeans(train)
 baseline1_test <- colMeans(train)
 
+#Function for applying model to one species
 dec_loop <- function(yname, o_method) {
   predicted_discards_train <- data.frame(matrix(ncol = 0, nrow = n_train))
   predicted_discards_test <- data.frame(matrix(ncol = 0, nrow = n_test))
@@ -93,6 +102,7 @@ dec_loop <- function(yname, o_method) {
     stop("Don't know this regression method")
   }
   
+  #Compute mean errors (log metric)
   scores <- list()
   scores[["lm_train"]] <- mean(abs(predicted_discards_train[[yname]] - train[[yname]]))
   scores[["b1_train"]] <- mean(abs(baseline1_train[[yname]] - train[[yname]]))
@@ -103,10 +113,13 @@ dec_loop <- function(yname, o_method) {
 
 scores <- data.frame(yname=character(), lm_train=numeric(), b1_train=numeric(), 
                      lm_test=numeric(), b1_test=numeric(), stringsAsFactors=FALSE)
+
+#Apply model for all species
 k <- 0
 for (yname in ynames) {
   k = k+1
   scores[k,] <- c(yname, as.list(dec_loop(yname, o_method)))
 }
 
+#Print mean error (over all species)
 colMeans(scores[,c('lm_train', 'b1_train', 'lm_test', 'b1_test')])
