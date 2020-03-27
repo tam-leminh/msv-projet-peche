@@ -1,18 +1,25 @@
-if (!file.exists("c_lasso_models.Rdata")) {
-  source("c_lasso.R")
+#Step C of the 2-steps model only
+
+#Check models
+if (!file.exists("models/step_c_lasso_models.Rdata")) {
+  source("step_c_lasso.R")
 }
-if (!file.exists("c_randomforest_models.Rdata")) {
-  source("c_randomforest.R")
+if (!file.exists("models/step_c_randomforest_models.Rdata")) {
+  source("step_c_randomforest.R")
 }
 
 source("miseenformedonnees.R")
 source("format_data.R")
 
-load("c_lasso_models.Rdata")
-load("c_randomforest_models.Rdata")
+load("models/step_c_lasso_models.Rdata")
+load("models/step_c_randomforest_models.Rdata")
 
+#Select model
 c_method <- "lassomin"
+#c_method <- "lasso1se"
+#c_method <- "randomforest"
 
+#Data formatting
 ret <- format_data(binary=TRUE, month=TRUE, rect=TRUE)
 data <- ret$data
 xnames <- ret$xnames
@@ -21,18 +28,13 @@ nobs = dim(data)[1]
 strsumx = paste(xnames, collapse= "+")
 
 #Build train and test sets
-
-set.seed(55)
-
+set.seed(55) #for reproducibility
 ret <- create_train_test(data, 0.7)
 train <- ret$train
 test <- ret$test
 train_ind <- ret$train_ind
 n_train = dim(train)[1]
 n_test = dim(test)[1]
-
-baseline1_train <- colMeans(train)
-baseline1_test <- colMeans(train)
 
 rates_train <- data.frame(matrix(ncol = 4, nrow = 0))
 rates_test <- data.frame(matrix(ncol = 4, nrow = 0))
@@ -41,7 +43,11 @@ colnames(rates_test) = c("tn", "fn", "fp", "tp")
 
 layers_train <- list()
 layers_test <- list()
+
+#Fix decision threshold
 dec_thr <- 0.5
+
+#With this dec_thr, do step C for all species
 for (yname in ynames) {
   if (c_method == 'lassomin') {
     if (yname %in% names(c_lasso_fit)) {
@@ -112,23 +118,29 @@ for (yname in ynames) {
   }
 }
 
-
-sum(layers_train[['Y3']])
-length(layers_train[['Y3']])
-
-table(train[['Y3']], layers_train[['Y3']])
+#Outcomes train and test
 rates_train
 rates_test
 
-length(layers_train[[yname]])
+#Sum over all species
 total_train <- colSums(rates_train)
 total_test <- colSums(rates_test)
-total_train['tn'] <- total_train['tn']+30*253
-total_test['tn'] <- total_test['tn']+30*109
-total_train['tp']/(total_train['tp']+total_train['fn'])
-total_test['tp']/(total_test['tp']+total_test['fn'])
+
+#Add all-zero species?
+#total_train['tn'] <- total_train['tn']+30*253
+#total_test['tn'] <- total_test['tn']+30*109
+
+#Confusion matrix
 total_train
 total_test
+
+#Sensitivity
+total_train['tp']/(total_train['tp']+total_train['fn'])
+total_test['tp']/(total_test['tp']+total_test['fn'])
+
+#Specificity
 total_train['tn']/(total_train['tn']+total_train['fp'])
 total_test['tn']/(total_test['tn']+total_test['fp'])
+
+#Overfit?
 total_test/total_train

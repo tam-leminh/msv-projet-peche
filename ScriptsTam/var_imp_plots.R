@@ -1,40 +1,26 @@
-if (!file.exists("c_lasso_models.Rdata")) {
-  source("c_lasso.R")
+#Variable importance plots
+
+#Check all models
+if (!file.exists("models/step_c_lasso_models.Rdata")) {
+  source("step_c_lasso.R")
 }
-if (!file.exists("r_lasso_models.Rdata")) {
-  source("r_lasso.R")
+if (!file.exists("models/step_r_lasso_models.Rdata")) {
+  source("step_r_lasso.R")
 }
-if (!file.exists("r_relax_models.Rdata")) {
-  source("r_relax.R")
-}
-if (!file.exists("r_randomforest_models.Rdata")) {
-  source("r_randomforest.R")
-}
-if (!file.exists("o_lasso_models.Rdata")) {
-  source("o_lasso.R")
-}
-if (!file.exists("o_relax_models.Rdata")) {
-  source("o_relax.R")
-}
-if (!file.exists("o_randomforest_models.Rdata")) {
-  source("o_randomforest.R")
+if (!file.exists("models/step_o_randomforest_models.Rdata")) {
+  source("step_o_randomforest.R")
 }
 
 source("miseenformedonnees.R")
 source("format_data.R")
 
-load("c_lasso_models.Rdata")
-load("r_lasso_models.Rdata")
-load("r_relax_models.Rdata")
-load("r_randomforest_models.Rdata")
-load("o_lasso_models.Rdata")
-load("o_relax_models.Rdata")
-load("o_randomforest_models.Rdata")
+load("models/step_c_lasso_models.Rdata")
+load("models/step_r_lasso_models.Rdata")
+load("models/step_o_randomforest_models.Rdata")
 
+#Get X names
 ret <- format_data(log=TRUE, month=TRUE, rect=TRUE)
-data <- ret$data
 xnames <- ret$xnames
-ynames <- ret$ynames
 
 #Variable importance/selection in models
 
@@ -50,10 +36,7 @@ heatmap.2(imp_matrix, Rowv = TRUE, Colv = TRUE, scale="none", dendrogram="none",
           col=brewer.pal(4,"OrRd"), cexCol=0.5, cexRow=0.5)
 legend(0.02,0.95, legend=c("<0.01", "0.01-0.1", "0.1-0.5", "> 0.5"), fill=brewer.pal(4,"OrRd"), cex=0.5)
 
-
-
-##Classification LASSO lambda1se
-
+##Step C LASSO lambda1se
 imp_matrix <- matrix(0, nrow=length(xnames), ncol=length(c_lasso_fit))
 rownames(imp_matrix) <- xnames
 colnames(imp_matrix) <- names(c_lasso_fit)
@@ -67,8 +50,7 @@ heatmap.2(imp_matrix, Rowv = TRUE, Colv = TRUE, scale="none",
           dendrogram="none", trace="none", key=FALSE, keysize=0.4, 
           col=brewer.pal(3,"OrRd"), cexRow=0.5, cexCol=0.5)
 
-##Classification LASSO lambdamin
-
+##Step C LASSO lambdamin
 imp_matrix <- matrix(0, nrow=length(xnames), ncol=length(c_lasso_fit))
 rownames(imp_matrix) <- xnames
 colnames(imp_matrix) <- names(c_lasso_fit)
@@ -86,7 +68,6 @@ a <- as.data.frame(frequency)
 a$varnames <- rownames(a)
 rownames(a) <- NULL
 
-
 ggplot(a[a['frequency']>10,], aes(x=reorder(varnames, frequency), y=frequency)) + 
   geom_point(size=2, colour="goldenrod4") +
   geom_segment(aes(x=varnames,xend=varnames,y=0,yend=frequency), size=1.5, colour="goldenrod3") +
@@ -95,12 +76,7 @@ ggplot(a[a['frequency']>10,], aes(x=reorder(varnames, frequency), y=frequency)) 
   xlab("Variable") +
   coord_flip()
 
-
-p <- ggplot(a, aes(x=rowSums.imp_matrix.)) + geom_bar(stat="identity")
-plot(p)
-
-##Regression LASSO lambda1se
-
+##Step R LASSO lambda1se
 imp_matrix <- matrix(0, nrow=length(xnames), ncol=length(r_lasso_fit))
 rownames(imp_matrix) <- xnames
 colnames(imp_matrix) <- names(r_lasso_fit)
@@ -113,8 +89,7 @@ heatmap.2(imp_matrix, Rowv = TRUE, Colv = TRUE, scale="none",
           dendrogram="none", trace="none", key=FALSE, keysize=0.4, 
           col=brewer.pal(3,"OrRd"), cexRow=0.5, cexCol=0.5)
 
-##Regression LASSO lambdamin
-
+##Step R LASSO lambdamin
 imp_matrix <- matrix(0, nrow=length(xnames), ncol=length(r_lasso_fit))
 rownames(imp_matrix) <- xnames
 colnames(imp_matrix) <- names(r_lasso_fit)
@@ -124,6 +99,5 @@ for (yname in names(r_lasso_fit)) {
 }
 imp_matrix[imp_matrix != 0] <- 1
 heatmap.2(imp_matrix, Rowv = TRUE, Colv = TRUE, scale="none", 
-          dendrogram="none", trace="none", key=FALSE, keysize=0.7, 
+          dendrogram="none", trace="none", key=FALSE, keysize=0.4, 
           col=brewer.pal(3,"OrRd"), cexRow=0.5, cexCol=0.5)
-

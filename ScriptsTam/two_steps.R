@@ -1,3 +1,5 @@
+#2-steps model
+
 #Check all models
 if (!file.exists("models/step_c_lasso_models.Rdata")) {
   source("step_c_lasso.R")
@@ -44,7 +46,6 @@ strsumx = paste(xnames, collapse= "+")
 
 #Build train and test sets
 set.seed(55) #for reproducibility
-
 ret <- create_train_test(data, 0.7)
 train <- ret$train
 test <- ret$test
@@ -56,7 +57,7 @@ n_test = dim(test)[1]
 baseline1_train <- colMeans(train)
 baseline1_test <- colMeans(train)
 
-#Function for applying 2-steps with a threshold
+#Function for applying 2-steps to one species with a threshold
 dec_loop <- function(yname, dec_thr, c_method, r_method) {
   layers_train <- list()
   layers_test <- list()
@@ -172,7 +173,7 @@ dec_loop <- function(yname, dec_thr, c_method, r_method) {
     stop("Don't know this regression method")
   }
   
-  #Compute mean errors
+  #Compute mean errors (log metric)
   scores <- list()
   scores[["mod_train"]] <- mean(abs(predicted_discards_train[[yname]] - train[[yname]]))
   scores[["b0_train"]] <- mean(abs(train[[yname]]))
