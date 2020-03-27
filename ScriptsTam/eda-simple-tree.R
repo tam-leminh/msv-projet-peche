@@ -1,3 +1,4 @@
+#Simple trees
 source("miseenformedonnees.R")
 source("format_data.R")
 library(rpart)
@@ -7,7 +8,6 @@ ret <- format_data(log=FALSE, month=TRUE, rect=TRUE)
 data <- ret$data
 xnames <- ret$xnames
 ynames <- ret$ynames
-nobs <- dim(data)[1]
 strsumx <- paste(xnames, collapse= "+")
 
 #Build train and test sets
@@ -19,10 +19,14 @@ train <- ret$train
 test <- ret$test
 train_ind <- ret$train_ind
 
+k <- 89 #species number
+tree_mod <- rpart(paste0("Y", k, "~", strsumx), data=train, control = rpart.control(minsplit = 20))
 
-
-tree_mod <- rpart(paste("Y89~",strsumx), data=train, control = rpart.control(minsplit = 20))
-plotcp(tree_mod)
-printcp(tree_mod)
+#Full tree
 prp(tree_mod)
-text(tree_mod, use.n = TRUE)
+
+#CV pruning
+plotcp(tree_mod)
+pruned <- prune(tree_mod, cp=tree_mod$cptable[which.min(tree_mod$cptable[,'xerror'])])
+prp(pruned)
+
