@@ -1,11 +1,11 @@
 
 
-#### Fonctions projet Stratégies de pêche ####
+#### Fonctions projet StratÃ©gies de pÃªche ####
 
-#### Fonctions variées ####
+#### Fonctions variÃ©es ####
 
 create_train_test <- function(data, train_ratio) {
-  #Fonction de Tâm
+  #Fonction de TÃ¢m
   train_ind = sample(seq_len(nrow(data)), size = floor(train_ratio * nrow(data)))
   train = data[train_ind, ]
   test = data[-train_ind, ]
@@ -37,7 +37,7 @@ metrique <- function(a, b) {
 
 calc_err_CV <- function(DIS, vrv = vraies_val,
                         title = "Erreur (log) selon abondance (log)", rec = recap) {
-  #calcul et représentation de l'erreur
+  #calcul et reprÃ©sentation de l'erreur
   erreur <- metrique(DIS[,spp[1]],vrv[,spp[1]])
   for (i in spp[-1]){
     x <- metrique(DIS[,i],vrv[,i])
@@ -53,7 +53,7 @@ calc_err_CV <- function(DIS, vrv = vraies_val,
   colnames(d)[3] <- "logab"
   pl <- ggplot(data = d)+
     geom_point(aes(x = d$logab, y = d$errlog))+
-    ggtitle(paste0(title, " - Entraînement"))+
+    ggtitle(paste0(title, " - EntraÃ®nement"))+
     ylab("Erreur (log10)") +
     xlab("Abondance (rejet)")
   print(pl)
@@ -77,7 +77,7 @@ calc_err_CV <- function(DIS, vrv = vraies_val,
   print("_____________")
 }
 
-#### Régression logistique ####
+#### RÃ©gression logistique ####
 
 pred_pres <- function(seuil = 0.5){
   pred <- matrix(rep(FALSE, len=ld*nrow(lan.aux)), nrow = ld)
@@ -110,12 +110,12 @@ pred_pres <- function(seuil = 0.5){
   return(pred)
 }
 
-#### Fonctions de régression ####
-# Les fonctions sont toutes similaires (même base)
+#### Fonctions de rÃ©gression ####
+# Les fonctions sont toutes similaires (mÃªme base)
 
 reg_lin_simple <- function(moyenne = FALSE){
   
-  # Matrice des coefficients de régression :
+  # Matrice des coefficients de rÃ©gression :
   lm.lan <- matrix(rep(0, len=ld*(4+length(spplan))), nrow = ld) #+4 var environnement
   colnames(lm.lan) <- c(spplan, "cosm", "sinm", "rectLat", "rectLon")
   intercpt <- rep(0, len = ld)
@@ -139,7 +139,7 @@ reg_lin_simple <- function(moyenne = FALSE){
     coef <- lmspp$coefficients
     coef[is.na(coef)] <- 0
     
-    #Compléter la matrice de régression :
+    #ComplÃ©ter la matrice de rÃ©gression :
     names_fact <- names(coef)
     char.aux <- substr(names_fact, 1, 1)
     if (char.aux[1] == "(") { #(Intercept)
@@ -155,13 +155,13 @@ reg_lin_simple <- function(moyenne = FALSE){
       lm.lan[i, s] <- coef
     }
   }
-  #Calcul de la prédiction pour toutes les OP
+  #Calcul de la prÃ©diction pour toutes les OP
   DIS <- lm.lan%*%t(lan.aux)+intercpt
   DIS[DIS<0] <- 0
   lmla <<- lm.lan
   rownames(DIS) <- spp_ok
   
-  # Compléter avec les espèces trop rares
+  # ComplÃ©ter avec les espÃ¨ces trop rares
   DISdef <- matrix(rep(0, len=length(defaillant)*nrow(lan.aux)), nrow = length(defaillant))
   rownames(DISdef) <- defaillant
   
@@ -199,7 +199,7 @@ reg_lin_jointe <- function(){
     coef[is.na(coef)] <- 0
     names_fact <- names(coef)
     char.aux <- substr(names_fact, 1, 1)
-    #Compléter la matrice des coef de régression
+    #ComplÃ©ter la matrice des coef de rÃ©gression
     if (char.aux[1] == "(") { #(Intercept)
       intercpt[i] <- coef[1]
       coef <- coef[-1]
