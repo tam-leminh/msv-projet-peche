@@ -1,8 +1,6 @@
 
-
-setwd("C:/Users/Moi/Desktop/4A MSV/Projet Stratégies de pêche")
 load("Agro_OTBCRU20132017.rdata")
-source("Miseenformedonnees.r")
+source("miseenformedonnees.r")
 source("fonctions Sylvain.r")
 
 library(glmnet)
