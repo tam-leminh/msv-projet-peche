@@ -6,7 +6,7 @@ Scripts qui commencent avec eda-\*.R
 
 ## Modèles
 
-2 scripts principaux pour approche naïve et modèle à 2 étapes.
+2 scripts principaux pour modèle de base (approche naïve) et modèle à 2 étapes.
 
 Pour entraîner les modèles, il faut exécuter les scripts correspondant : step-o, step-c ou step-r
 
@@ -19,7 +19,7 @@ Pour entraîner un modèle de nouveau, il faut soit supprimer le modèle corresp
 ### Formattage des données
 format_data.R
 
-### Approche naïve
+### Modèle de base 
 - Script principal : one_step.R
 - Modèles : step_o_\*.R
 
