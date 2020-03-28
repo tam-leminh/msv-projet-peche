@@ -1,6 +1,6 @@
 
 
-setwd("C:/Users/Moi/Desktop/4A MSV/Projet Stratégies de pêche")
+setwd("C:/Users/Moi/Desktop/4A MSV/Projet StratÃ©gies de pÃªche")
 load("Agro_OTBCRU20132017.rdata")
 source("Miseenformedonnees.r")
 source("fonctions Sylvain.r")
@@ -13,21 +13,21 @@ library(ggplot2)
 
 #### Organisation du script ####
 #
-# Le script utilise les quantités et fonctions introduites
+# Le script utilise les quantitÃ©s et fonctions introduites
 # dans Miseenformedonnees.r et fonctions Sylvain.r.
 # Pas besoin de manipuler ces fichiers a priori.
 #
 # Dans ce script :
 
-# Modèles de régression step (simple/moyenne/jointe)
-# pour le modèle basique et pour le modèle à 2 étapes
+# ModÃ¨les de rÃ©gression step (simple/moyenne/jointe)
+# pour le modÃ¨le basique et pour le modÃ¨le Ã  2 Ã©tapes
 #
 # Figures et autres annexes
 #
 # Etudes des clusters
 #
 
-#### quantités auxiliaires utiles ####
+#### quantitÃ©s auxiliaires utiles ####
 
 recap <- data.frame(LAN.presences = apply(mat.oc.lanquant, 2, function(x) sum(x>0)),
                     DIS.presences = apply(mat.oc.disquant, 2, function(x) sum(x>0)),
@@ -48,7 +48,7 @@ lan.aux$rectLat <- rectLat$V1[match(lanquant.co$rect, rectLat$rect)]
 lan.aux$rectLon <- rectLon$V1[match(lanquant.co$rect, rectLon$rect)]
 colnames(lan.aux) <- paste0("c", 1:ncol(lan.aux))
 
-#### Préparation Validation Croisée ####
+#### PrÃ©paration Validation CroisÃ©e ####
 
 set.seed(123)
 
@@ -72,13 +72,13 @@ colnames(dis.aux) <- paste0("d", 1:ncol(dis.aux))
 
 lmla <- NULL
 
-#### Prédiction des rejets avec modèle de régression simple ####
+#### PrÃ©diction des rejets avec modÃ¨le de rÃ©gression simple ####
 
 Y_reg_simple <- reg_lin_simple()
 
-calc_err_CV(Y_reg_simple, title = "Modèle simple")
+calc_err_CV(Y_reg_simple, title = "ModÃ¨le simple")
 
-#Coefficients de régression non nuls :
+#Coefficients de rÃ©gression non nuls :
 sum(lmla!=0)
 #Soit en % :
 sum(lmla!=0)/(dim(lmla)[1]*dim(lmla)[2])
@@ -87,7 +87,7 @@ sum(lmla!=0)/(dim(lmla)[1]*dim(lmla)[2])
 table(zeros(Y_reg_simple))
 
 
-#### Prédiction des rejets avec modèle moyenne ####
+#### PrÃ©diction des rejets avec modÃ¨le moyenne ####
 
 Y_moy <- reg_lin_simple(moyenne = TRUE)
 
@@ -97,19 +97,19 @@ calc_err_CV(Y_moy, title = "Moyenne")
 table(zeros(Y_moy))
 
 
-#### Modèle de régression jointe ####
+#### ModÃ¨le de rÃ©gression jointe ####
 
 lmdis <- NULL
 
 Y_joint <- reg_lin_jointe()
 
-calc_err_CV(Y_joint, title = "Modèle joint")
+calc_err_CV(Y_joint, title = "ModÃ¨le joint")
 
-#Coefficients de régression non nuls(débarquements)
+#Coefficients de rÃ©gression non nuls(dÃ©barquements)
 sum(lmla != 0)
 sum(lmla != 0)/(dim(lmla)[1]*dim(lmla)[2])
 
-#Coefficients de régression non nuls(rejets)
+#Coefficients de rÃ©gression non nuls(rejets)
 (sum(lmdis!=0)-length(spp_ok)) #enlever les 62 "1" sur la diagonale
 (sum(lmdis!=0)-length(spp_ok))/(dim(lmdis)[1]*dim(lmdis)[2])
 
@@ -117,30 +117,30 @@ sum(lmla != 0)/(dim(lmla)[1]*dim(lmla)[2])
 table(zeros(Y_joint))
 
 
-#### Prédiction de présence : régression logistique ####
+#### PrÃ©diction de prÃ©sence : rÃ©gression logistique ####
 
 aux <- NULL
 
 pred <- pred_pres()
 
 
-#### Prédiction à 2 étapes ####
+#### PrÃ©diction Ã  2 Ã©tapes ####
 
 Y_simple_2step <- reg_2step_simple(pred)
-calc_err_CV(Y_simple_2step, title = "Modèle de régression simple à 2 étapes")
+calc_err_CV(Y_simple_2step, title = "ModÃ¨le de rÃ©gression simple Ã  2 Ã©tapes")
 table(zeros(Y_simple_2step))
 
 sum(lmla!=0)
 sum(lmla!=0)/(dim(lmla)[1]*dim(lmla)[2])
 
 Y_moy_2step <- reg_2step_simple(pred, moyenne = TRUE)
-calc_err_CV(Y_moy_2step, title = "Prédiction de la moyenne à 2 étapes")
+calc_err_CV(Y_moy_2step, title = "PrÃ©diction de la moyenne Ã  2 Ã©tapes")
 table(zeros(Y_moy_2step))
 
 lmdis <- NULL
 
 Y_jointe_2step <- reg_2step_jointe(pred)
-calc_err_CV(Y_jointe_2step, title = "Modèle de régression jointe à 2 étapes")
+calc_err_CV(Y_jointe_2step, title = "ModÃ¨le de rÃ©gression jointe Ã  2 Ã©tapes")
 table(zeros(Y_jointe_2step))
 
 sum(lmla!=0)
@@ -176,7 +176,7 @@ rec <- data.frame(Y_pres = apply(mat.oc.disquant, 2, function(x) sum(x>0)),
                   X_moy_debarq = trunc(xmoy),
                   X_max = apply(mat.oc.lanquant, 2, max))
 
-#### Figure 2.1 : Heatmap (Corrélation entre rejet et débarq pour 56 espèces) ####
+#### Figure 2.1 : Heatmap (CorrÃ©lation entre rejet et dÃ©barq pour 56 espÃ¨ces) ####
 
 lan <- lanquant.co[,c(8:157)]
 dis <- disquant.co[,c(8:157)]
@@ -200,11 +200,11 @@ ggplot(data, aes(X, Y, fill= Z)) +
   geom_tile()+scale_fill_gradient2(low = "blue", mid = "white", high = "red",
                                    limits = c(-1,1), midpoint = 0) +
   theme(axis.text.x = element_text(size=6, angle = 90),
-        axis.text.y = element_text(size=6))+ggtitle("Corrélations des espèces rejetées et débarquées")+xlab("Débarquements")+
+        axis.text.y = element_text(size=6))+ggtitle("CorrÃ©lations des espÃ¨ces rejetÃ©es et dÃ©barquÃ©es")+xlab("DÃ©barquements")+
   ylab("Rejets")
 # x11(width=20, height = 20) #Pour augmenter la taille de l'image
 
-#### Figure 2.4 : Résidus du modèle linéaire ####
+#### Figure 2.4 : RÃ©sidus du modÃ¨le linÃ©aire ####
 plerr <- NULL
 for (i in 1:length(spp)){
   aux <- data.frame(err = (vraies_val[,i]-Y_reg_simple[,i])^2, val = vraies_val[,i])
@@ -213,19 +213,19 @@ for (i in 1:length(spp)){
 }
 
 ggplot(data = plerr)+geom_point(aes(x = val, y = err))+
-  ggtitle("Résidus du modèle de régression simple")+
-  xlab("Valeur réelle du rejet")+
-  ylab("(Rejet observé - rejet estimé)²")
+  ggtitle("RÃ©sidus du modÃ¨le de rÃ©gression simple")+
+  xlab("Valeur rÃ©elle du rejet")+
+  ylab("(Rejet observÃ© - rejet estimÃ©)Â²")
 
-#### Figures A1 - A2 : Quantité en fonction du nb de rejets/débarq ####
+#### Figures A1 - A2 : QuantitÃ© en fonction du nb de rejets/dÃ©barq ####
 
 ggplot(rec)+geom_point(aes(x = log10(1+Y_pres), y = log10(Y_moy_rejet+1)))+
-  ggtitle("Quantités rejetées en fonction du nombre de rejets")
+  ggtitle("QuantitÃ©s rejetÃ©es en fonction du nombre de rejets")
 
 ggplot(rec)+geom_point(aes(x = log10(1+X_pres), y = log10(X_moy_debarq+1)))+
-  ggtitle("Qtés débarquées en fonction du nombre de débarq.")
+  ggtitle("QtÃ©s dÃ©barquÃ©es en fonction du nombre de dÃ©barq.")
 
-#### Figures A3 et A4 : Variabilité mensuelle ####
+#### Figures A3 et A4 : VariabilitÃ© mensuelle ####
 
 #Rejets
 mrej <- c()
@@ -241,20 +241,20 @@ for (m in c(paste0("0", as.character(1:9)), as.character(10:12))) {
 
 ggplot(data = NULL, aes(c(paste0("0", as.character(1:9)), as.character(10:12)), mrej))+
   geom_bar(stat = "identity")+
-  xlab("Mois")+ylab("Nombre moyen de rejets par opération")+
-  ggtitle("Variabilité mensuelle des rejets - Occurences")
+  xlab("Mois")+ylab("Nombre moyen de rejets par opÃ©ration")+
+  ggtitle("VariabilitÃ© mensuelle des rejets - Occurences")
 
 ggplot(data = NULL, aes(c(paste0("0", as.character(1:9)), as.character(10:12)), mqr))+
   geom_bar(stat = "identity")+
-  xlab("Mois")+ylab("Quantité moyenne rejetée par opération")+
-  ggtitle("Variabilité mensuelle des rejets - Quantités")
+  xlab("Mois")+ylab("QuantitÃ© moyenne rejetÃ©e par opÃ©ration")+
+  ggtitle("VariabilitÃ© mensuelle des rejets - QuantitÃ©s")
 
 ggplot(data = NULL, aes(c(paste0("0", as.character(1:9)), as.character(10:12)), mespr))+
   geom_bar(stat = "identity")+
-  xlab("Mois")+ylab("Nombre d'espèces rejetées au moins une fois")+
-  ggtitle("Variabilité mensuelle des rejets - Espèces")
+  xlab("Mois")+ylab("Nombre d'espÃ¨ces rejetÃ©es au moins une fois")+
+  ggtitle("VariabilitÃ© mensuelle des rejets - EspÃ¨ces")
 
-#Débarquements
+#DÃ©barquements
 mrej <- c()
 mqr <- c()
 mespr <- c()
@@ -268,22 +268,22 @@ for (m in c(paste0("0", as.character(1:9)), as.character(10:12))) {
 
 ggplot(data = NULL, aes(c(paste0("0", as.character(1:9)), as.character(10:12)), mrej))+
   geom_bar(stat = "identity")+
-  xlab("Mois")+ylab("Nombre moyen de débarquements par opération")+
-  ggtitle("Variabilité mensuelle des débarquements - Occurences")
+  xlab("Mois")+ylab("Nombre moyen de dÃ©barquements par opÃ©ration")+
+  ggtitle("VariabilitÃ© mensuelle des dÃ©barquements - Occurences")
 
 ggplot(data = NULL, aes(c(paste0("0", as.character(1:9)), as.character(10:12)), mqr))+
   geom_bar(stat = "identity")+
-  xlab("Mois")+ylab("Quantité moyenne débarquée par opération")+
-  ggtitle("Variabilité mensuelle des débarquements - Quantités")
+  xlab("Mois")+ylab("QuantitÃ© moyenne dÃ©barquÃ©e par opÃ©ration")+
+  ggtitle("VariabilitÃ© mensuelle des dÃ©barquements - QuantitÃ©s")
 
 ggplot(data = NULL, aes(c(paste0("0", as.character(1:9)), as.character(10:12)), mespr))+
   geom_bar(stat = "identity")+
-  xlab("Mois")+ylab("Nombre d'espèces débarquées au moins une fois")+
-  ggtitle("Variabilité mensuelle des débarquements - Espèces")
+  xlab("Mois")+ylab("Nombre d'espÃ¨ces dÃ©barquÃ©es au moins une fois")+
+  ggtitle("VariabilitÃ© mensuelle des dÃ©barquements - EspÃ¨ces")
 
-#### Figures A5 et A6 : Variabilité spatiale ####
+#### Figures A5 et A6 : VariabilitÃ© spatiale ####
 
-#Débarquements
+#DÃ©barquements
 rrej <- c()
 rqr <- c()
 respr <- c()
@@ -304,18 +304,18 @@ for (m in unique(lanquant.co$rect)) {
 
 ggplot(data = NULL, aes(unique(lanquant.co$rect), rrej))+
   geom_bar(stat = "identity")+
-  xlab("Rectangle de pêche")+ylab("Nombre moyen de débarquements par opération")+
-  ggtitle("Variabilité spatiale des débarquements - Occurences")
+  xlab("Rectangle de pÃªche")+ylab("Nombre moyen de dÃ©barquements par opÃ©ration")+
+  ggtitle("VariabilitÃ© spatiale des dÃ©barquements - Occurences")
 
 ggplot(data = NULL, aes(unique(lanquant.co$rect), rqr))+
   geom_bar(stat = "identity")+
-  xlab("Rectangle de pêche")+ylab("Quantité moyenne débarquée par opération")+
-  ggtitle("Variabilité spatiale des débarquements - Quantités")
+  xlab("Rectangle de pÃªche")+ylab("QuantitÃ© moyenne dÃ©barquÃ©e par opÃ©ration")+
+  ggtitle("VariabilitÃ© spatiale des dÃ©barquements - QuantitÃ©s")
 
 ggplot(data = NULL, aes(unique(lanquant.co$rect), respr))+
   geom_bar(stat = "identity")+
-  xlab("Rectangle de pêche")+ylab("Nombre d'espèces débarquées au moins une fois")+
-  ggtitle("Variabilité spatiale des débarquements - Espèces")
+  xlab("Rectangle de pÃªche")+ylab("Nombre d'espÃ¨ces dÃ©barquÃ©es au moins une fois")+
+  ggtitle("VariabilitÃ© spatiale des dÃ©barquements - EspÃ¨ces")
 
 #Rejets
 rrej <- c()
@@ -338,18 +338,18 @@ for (m in unique(disquant.co$rect)) {
 
 ggplot(data = NULL, aes(unique(lanquant.co$rect), rrej))+
   geom_bar(stat = "identity")+
-  xlab("Rectangle de pêche")+ylab("Nombre moyen de rejets par opération")+
-  ggtitle("Variabilité spatiale des rejets - Occurences")
+  xlab("Rectangle de pÃªche")+ylab("Nombre moyen de rejets par opÃ©ration")+
+  ggtitle("VariabilitÃ© spatiale des rejets - Occurences")
 
 ggplot(data = NULL, aes(unique(lanquant.co$rect), rqr))+
   geom_bar(stat = "identity")+
-  xlab("Rectangle de pêche")+ylab("Quantité moyenne rejetée par opération")+
-  ggtitle("Variabilité spatiale des rejets - Quantités")
+  xlab("Rectangle de pÃªche")+ylab("QuantitÃ© moyenne rejetÃ©e par opÃ©ration")+
+  ggtitle("VariabilitÃ© spatiale des rejets - QuantitÃ©s")
 
 ggplot(data = NULL, aes(unique(lanquant.co$rect), respr))+
   geom_bar(stat = "identity")+
-  xlab("Rectangle de pêche")+ylab("Nombre d'espèces rejetées au moins une fois")+
-  ggtitle("Variabilité spatiale des rejets - Espèces")
+  xlab("Rectangle de pÃªche")+ylab("Nombre d'espÃ¨ces rejetÃ©es au moins une fois")+
+  ggtitle("VariabilitÃ© spatiale des rejets - EspÃ¨ces")
 
 #### Annexe B : Recap rares ####
 
@@ -357,9 +357,9 @@ rec[defaillant,]
 #write.csv(rec[defaillant,], "C:/Users/Moi/Desktop/recap_rares.csv")
 
 
-#### Clustering et prédiction des espèces rares ####
+#### Clustering et prÃ©diction des espÃ¨ces rares ####
 
-#### Visualisation des espèces rares ####
+#### Visualisation des espÃ¨ces rares ####
 
 ggplot(recap, aes(x = recap$DIS.presences, y = log10(recap$DIS.masse+1)))+geom_point()
 
@@ -380,7 +380,7 @@ for (k in c(2:9)) {
   cluster_k <- kmeans(recapdis[,c("DIS.presences")], k, nstart = 20)
   # print(ggplot(recapdis)+geom_point(aes(x = recapdis$DIS.presences, y = recapdis$DIS.masselog10,
   #                                       color = as.factor(as.vector(cluster_k$cluster))))+
-  #         scale_color_discrete(name = "Clusters")+xlab("Présences DIS")+ylab("Masse DIS")+ggtitle(paste0("Espèces - ", k, " clusters")))
+  #         scale_color_discrete(name = "Clusters")+xlab("PrÃ©sences DIS")+ylab("Masse DIS")+ggtitle(paste0("EspÃ¨ces - ", k, " clusters")))
   err <- cluster_k$tot.withinss
   aic <- kmeansAIC(cluster_k)
   opti_clusters <- rbind(opti_clusters, data.frame(k = k, AIC = aic, err = err))
@@ -393,19 +393,19 @@ k <- 6
 cluster_rare <- kmeans(recapdis[,c("DIS.presences")], k, nstart = 20)
 ggplot(recapdis)+geom_point(aes(x = recapdis$DIS.presences, y = recapdis$DIS.masselog10,
                                 color = as.factor(as.vector(cluster_rare$cluster))))+
-  scale_color_discrete(name = "Clusters")+xlab("Présences dans les rejets")+ylab("Masse totale rejetée (log) (non clusterisée)")+
+  scale_color_discrete(name = "Clusters")+xlab("PrÃ©sences dans les rejets")+ylab("Masse totale rejetÃ©e (log) (non clusterisÃ©e)")+
   ggtitle(paste0(k, " clusters kmeans sur le nombre de rejets"))
 
 ind <- cluster_rare$cluster[1]
-#1 = position de Acantholabrus palloni présent une seule fois dans les DIS
+#1 = position de Acantholabrus palloni prÃ©sent une seule fois dans les DIS
 
-#### Clustering des espèces rares sur les quantités moyennes rejetées ####
+#### Clustering des espÃ¨ces rares sur les quantitÃ©s moyennes rejetÃ©es ####
 
-nrow(recapdis) #nb d'espèces avec au moins 1 rejet > 0
+nrow(recapdis) #nb d'espÃ¨ces avec au moins 1 rejet > 0
 recapdis[cluster_rare$cluster == ind,]
-nrow(recapdis[cluster_rare$cluster == ind,]) #nb d'espèces rarement rejetées
+nrow(recapdis[cluster_rare$cluster == ind,]) #nb d'espÃ¨ces rarement rejetÃ©es
 rares <- rownames(recapdis[cluster_rare$cluster == ind,])
-nrow(recapdis[cluster_rare$cluster != ind,]) #nb d'espèces souvent rejetées
+nrow(recapdis[cluster_rare$cluster != ind,]) #nb d'espÃ¨ces souvent rejetÃ©es
 max(recapdis[cluster_rare$cluster == ind,]$DIS.presences)
 min(recapdis[cluster_rare$cluster != ind,]$DIS.presences)
 
@@ -417,7 +417,7 @@ for (k in c(2:10)) {
   cluster_k <- kmeans(log10(recap.rare$DIS.massemoy), k, nstart = 20)
   # print(ggplot(recap.rare)+geom_point(aes(x = recap.rare$DIS.presences, y = recap.rare$DIS.massemoy,
   #                                         color = as.factor(as.vector(cluster_k$cluster))))+
-  #         scale_color_discrete(name = "Clusters")+xlab("Présences DIS")+ylab("Masse DIS moy")+ggtitle(paste0("Espèces - ", k, " clusters")))
+  #         scale_color_discrete(name = "Clusters")+xlab("PrÃ©sences DIS")+ylab("Masse DIS moy")+ggtitle(paste0("EspÃ¨ces - ", k, " clusters")))
   err <- cluster_k$tot.withinss
   aic <- kmeansAIC(cluster_k)
   opti_clusters <- rbind(opti_clusters, data.frame(k = k, AIC = aic, err = err))
@@ -430,8 +430,8 @@ k <- 5
 clust.rare.moy <- kmeans(log10(recap.rare[,"DIS.massemoy"]), k, nstart = 20)
 ggplot(recap.rare)+geom_point(aes(x = recap.rare$DIS.presences, y = log10(recap.rare$DIS.massemoy),
                                   color = as.factor(as.vector(clust.rare.moy$cluster))))+
-  scale_color_discrete(name = "Clusters")+xlab("Présences dans les rejets")+
-  ylab("log10(Masse moyenne rejetée)")+ggtitle(paste0("74 espèces rares - ", k, " clusters"))
+  scale_color_discrete(name = "Clusters")+xlab("PrÃ©sences dans les rejets")+
+  ylab("log10(Masse moyenne rejetÃ©e)")+ggtitle(paste0("74 espÃ¨ces rares - ", k, " clusters"))
 
 clust.rare.moy
 
@@ -446,16 +446,16 @@ for (i in 1:nrow(recap)) {
 }
 
 table(recap$clust)
-#le cluster -1 correspond aux espèces abondantes ou complétement absentes
+#le cluster -1 correspond aux espÃ¨ces abondantes ou complÃ©tement absentes
 
-#On supprime les deux espèces singulières évoquées dans le rapport :
+#On supprime les deux espÃ¨ces singuliÃ¨res Ã©voquÃ©es dans le rapport :
 # Deltentosteus quadrimaculatus 17
 # Raja undulata 59
 rares <- rares[-c(17, 59)]
 
 sppdis2 <- c(rownames(recap), "cluster1", "cluster2", "cluster3", "cluster4", "cluster5")
 sppdis2 <- sppdis2[!(sppdis2 %in% rares)]
-ldis2 <- length(sppdis2) #46 abondantes + 2 singulières + 5 clusters + 30 absentes
+ldis2 <- length(sppdis2) #46 abondantes + 2 singuliÃ¨res + 5 clusters + 30 absentes
 
 dis.aux <- disquant.co[,8:ncol(disquant.co)]
 c1 <- matrix(rep(0, len = nrow(disquant.co)), nrow = nrow(disquant.co))
@@ -475,7 +475,7 @@ for (s in rares){
 dis.aux <- cbind(dis.aux, colcl)
 dis.aux <- dis.aux[,sppdis2]
 
-#### Régressions en utilisant les clusters ####
+#### RÃ©gressions en utilisant les clusters ####
 
 spp<- colnames(dis.aux)
 
@@ -503,22 +503,22 @@ sppdis2 <- c(rownames(recap), "cluster1", "cluster2", "cluster3", "cluster4", "c
 sppdis2 <- sppdis2[!(sppdis2 %in% rares)]
 Ycl <- Ycl[,sppdis2]
 
-#l'affichage graphique de l'erreur pour les clusters n'a pas été codé
-calc_err_CV(Ycl, vrv = dis_tout, title = "Régression simple avec clusters")
+#l'affichage graphique de l'erreur pour les clusters n'a pas Ã©tÃ© codÃ©
+calc_err_CV(Ycl, vrv = dis_tout, title = "RÃ©gression simple avec clusters")
 
 Yclmoy <- reg_lin_simple(moyenne = TRUE)
-#l'affichage graphique de l'erreur pour les clusters n'a pas été codé
+#l'affichage graphique de l'erreur pour les clusters n'a pas Ã©tÃ© codÃ©
 calc_err_CV(Yclmoy, vrv = dis_tout, title = "moyenne")
 
 
-#### Clusters hiérarchiques ####
+#### Clusters hiÃ©rarchiques ####
 
 disquant.rare <- disquant.co[,rares]
 pres.rare <- disquant.rare>0
 rowSums(disquant.rare>0)
 
-#proxim ci-dessous donne une idée des corrélations entre espèces rejetées
-#Décompte du nb d'OP où 2 espèces sont rejetées simultanément
+#proxim ci-dessous donne une idÃ©e des corrÃ©lations entre espÃ¨ces rejetÃ©es
+#DÃ©compte du nb d'OP oÃ¹ 2 espÃ¨ces sont rejetÃ©es simultanÃ©ment
 proxim <- matrix(rep(0, len = length(rares)^2), nrow = length(rares))
 for (i in 1:(length(rares)-1)){
   for (j in (i+1):length(rares)){
@@ -600,6 +600,6 @@ colnames(dis.aux) <- paste0("d", 1:ncol(dis.aux))
 dim(dis.aux)
 
 Y_hcl <- reg_simple_clusters()
-calc_err_CV(Y_hcl, vrv = dis_tout, title = "Régression simple avec clusters hiérarchiques")
+calc_err_CV(Y_hcl, vrv = dis_tout, title = "RÃ©gression simple avec clusters hiÃ©rarchiques")
 
 #### Fin ####
